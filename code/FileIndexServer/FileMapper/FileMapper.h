@@ -4,11 +4,12 @@ template<typename T>
 class FileMapper {
 
 private:
-
+    T hash1, hash2, size;
+    vector<string> aka;
 
 public:
 
-    T hash, size;
-    vector<string> aka;
+    FileMapper<T>(s);
+    void knownAs(string);
 
 }
