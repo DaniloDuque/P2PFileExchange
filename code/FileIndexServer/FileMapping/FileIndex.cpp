@@ -14,7 +14,8 @@ void FileIndex<T>::update(T h1, T h2, T sz, string alias, PeerInfo pinfo){
 
 template<typename T>
 vector<FileInfo<T>> FileIndex<T>::find(string alias){
+    vector<FileInfo<T>> r;
     for(auto &p : info){
-        if(p.snd.exists(alias)) return p.snd;
-    }return {};
+        if(p.snd.exists(alias)) r.push_back(p.snd);
+    }return r;
 }
