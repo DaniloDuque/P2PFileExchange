@@ -28,6 +28,6 @@ bool FileInfo<T>::operator<(const FileInfo& other) const {
 }
 
 template<typename T>
-bool FileInfo<T>::find(string alias){
+bool FileInfo<T>::exists(string alias){
     return (aka.find(alias)!=aka.end());
 }

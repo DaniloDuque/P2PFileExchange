@@ -13,8 +13,8 @@ private:
     map<FileInfo<T>, shared_ptr<FileInfo<T>>> info;
 public:
     FileIndex();
-    vector<FileInfo> find(string); 
+    vector<FileInfo<T>> find(string); 
     void update(T, T, T, string);
-}
+};
 
 #endif 
