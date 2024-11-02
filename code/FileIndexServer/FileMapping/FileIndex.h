@@ -14,7 +14,9 @@ private:
 public:
     FileIndex();
     vector<FileInfo<T>> find(string); 
-    void update(T, T, T, string);
+    void update(T, T, T, string, PeerInfo);
 };
+
+#include "FileIndex.cpp"
 
 #endif 
