@@ -2,8 +2,10 @@
 #define FILEINFO_H
 
 #include <iostream>
+#include <vector>
 #include <ext/pb_ds/assoc_container.hpp>
 #include <ext/pb_ds/trie_policy.hpp>
+#include "PeerInfo.h"
 using namespace __gnu_pbds;
 using namespace std;
 
@@ -15,11 +17,13 @@ class FileInfo {
 private:
     T hash1, hash2, size;
     trie<string> aka;
+    vector<PeerInfo> addr; 
 
 public:
-    FileInfo(T, T, T, string);
+    FileInfo(T, T, T, string, PeerInfo);
     FileInfo(T, T, T);
-    void knownAs(string alias);
+    void knownAs(string, PeerInfo);
+    bool exists(string);
     bool operator==(const FileInfo&) const;
     bool operator<(const FileInfo&) const;
 };
