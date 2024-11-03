@@ -1,5 +1,5 @@
 #include "FileMapping/FileIndex.h"
-#include "util.h"
+#include "../util.h"
 
 int main() {
 

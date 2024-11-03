@@ -2,14 +2,13 @@
 #define UTIL_HEADER
 
 #include <iostream>
-#include <cstring>
+#include <thread>
+#include <string>
+#include <netinet/in.h>
 #include <unistd.h>
-#include <arpa/inet.h>
+#include <thread>
 
-#define PORT 8080
-#define BUFFER_SIZE 1024
-
-#define ll long long
+#define BUFFER_SIZE (1<<13)
 #define byte unsigned char
 
 #endif
