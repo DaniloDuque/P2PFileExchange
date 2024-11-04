@@ -24,7 +24,7 @@ public:
     FileInfo(T, T, T);
     void knownAs(string, PeerInfo);
     bool exists(string);
-    bool operator==(const FileInfo&) const;
+    bool operator == (const FileInfo&) const;
     bool operator<(const FileInfo&) const;
 };
 
