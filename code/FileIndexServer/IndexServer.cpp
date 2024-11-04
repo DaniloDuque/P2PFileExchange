@@ -2,7 +2,7 @@
 #include "FileMapping/FileInfo.h"
 
 template<typename T>
-void IndexServer<T>::addPeer(vector<FileInfo<T>> peerFiles){
+void IndexServer<T>::addPeer(vector<PeerFileDTO<T>> peerFiles){
     for(auto &pf : peerFiles) index.update(pf);
 }
 

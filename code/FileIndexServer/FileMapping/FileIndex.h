@@ -5,6 +5,7 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include "../PeerFileDTO.h"
 
 template<typename T>
 class FileIndex {
@@ -14,7 +15,7 @@ private:
 public:
     FileIndex();
     FileInfo<T> find(string); 
-    void update(FileInfo<T>);
+    void update(PeerFileDTO<T>);
 };
 
 #include "FileIndex.cpp"
