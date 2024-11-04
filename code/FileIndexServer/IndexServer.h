@@ -13,6 +13,8 @@ private:
     FileIndex<T> index;
     void addPeer(vector<PeerFileDTO<T>>);
     FileInfo<T> findFile(string);
+public: 
+    void handleClient() const override;
 };
 
 #include "IndexServer.cpp"

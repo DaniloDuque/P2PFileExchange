@@ -7,7 +7,7 @@ class TCPServer {
 
 private:
     int port;
-    void handleClient(int);
+    virtual void handleClient(int) const;
 
 public:
     TCPServer(int);
