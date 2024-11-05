@@ -1,10 +1,12 @@
 #include <iostream>
 #include <gtest/gtest.h>
+#include "fileReader.cpp"
 
 
 
-TEST(AddTest, HandlesPositiveInput) {
-    EXPECT_EQ(1 + 2, 5);
+TEST(SizeTest, CountSizeOfOutput) {
+    std::string s = "testDirectory";
+    EXPECT_EQ(fileDirectoryReader(s).size(), 2);
 }
 
 int main(int argc, char **argv) {
