@@ -10,10 +10,10 @@ void FileIndex<T>::update(PeerFileDTO<T> dto){
     FileInfo<T> cur(dto.h1, dto.h2, dto.size);
     auto it = info.find(cur);
     if(it!=info.end()){
-        it->second.knownAs(dto.alias, dto.pinfo);
+        it->second->knownAs(dto.alias, dto.info);
         return;
     }
-    info[cur]=make_shared<FileInfo<T>>(dto.h1,dto.h2,dto.sz,dto.alias,dto.pinfo);
+    info[cur]=make_shared<FileInfo<T>>(dto.h1,dto.h2,dto.size,dto.alias,dto.info);
 } 
 
 template<typename T>

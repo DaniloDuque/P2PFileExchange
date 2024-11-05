@@ -15,13 +15,16 @@ using Trie = trie<Key, Value, trie_string_access_traits<>, pat_trie_tag, trie_pr
 template<typename T>
 class FileInfo {
 private:
-    T hash1, hash2, size;
+    const T hash1, hash2, size;
     Trie<string> aka;
     vector<PeerInfo> addr; 
 
 public:
     FileInfo(T, T, T, string, PeerInfo);
     FileInfo(T, T, T);
+    T getSize() const;
+    T getHash1() const;
+    T getHash2() const;
     void knownAs(string, PeerInfo);
     bool exists(string);
     bool operator == (const FileInfo&) const;

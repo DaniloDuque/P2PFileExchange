@@ -19,6 +19,7 @@
 #include <limits>
 #include <cstdlib>
 #include <netdb.h>
+#include <sstream>
 
 #define INDEX_PORT 8080
 #define INDEX_IP "6.tcp.ngrok.k"

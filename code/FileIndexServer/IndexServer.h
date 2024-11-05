@@ -12,9 +12,11 @@ private:
     FileIndex<T> index;
     void addPeer(vector<PeerFileDTO<T>>);
     FileInfo<T> findFile(string);
+    void handleClient(int) override;
+    void handleAddPeer(string);
+    void handleFindFile(string, int);
 public: 
     IndexServer(int);
-    void handleClient(int) override;
 };
 
 #include "IndexServer.cpp"
