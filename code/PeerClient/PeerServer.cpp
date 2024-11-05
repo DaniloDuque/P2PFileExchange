@@ -1,7 +1,7 @@
 #include "PeerServer.h"
 
 
-#include "FileReader/fileReader.cpp"
+#include "fileReader.cpp"
 
 #include "PeerFileDTO.h"
 
