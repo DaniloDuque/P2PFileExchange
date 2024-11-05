@@ -2,6 +2,10 @@
 #include "FileInfo.h"
 
 template<typename T>
+FileIndex<T>::FileIndex() {
+}
+
+template<typename T>
 void FileIndex<T>::update(PeerFileDTO<T> dto){
     FileInfo<T> cur(dto.h1, dto.h2, dto.size);
     auto it = info.find(cur);

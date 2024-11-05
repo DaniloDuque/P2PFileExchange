@@ -1,5 +1,9 @@
 #include "IndexServer.h"
+#include "FileMapping/FileIndex.h"
 #include "FileMapping/FileInfo.h"
+
+template<typename T>
+IndexServer<T>::IndexServer(int p) : TCPServer(p) {}
 
 template<typename T>
 void IndexServer<T>::addPeer(vector<PeerFileDTO<T>> peerFiles){
@@ -12,6 +16,12 @@ FileInfo<T> IndexServer<T>::findFile(string alias){
 }
 
 template<typename T>
-void IndexServer<T>::handleClient() {
+void IndexServer<T>::handleClient(int client_socket) {
+    uchar buffer[BUFFER_SIZE] = {};
+    read(client_socket, buffer, BUFFER_SIZE);
+    std::string hello = "Hello from index server";
+    send(client_socket, hello.c_str(), hello.size(), 0);
+    std::cout << "Message Sent!" << std::endl;
+    close(client_socket);
     std::cout << "Managing client on index server!" << std::endl;
 }

@@ -16,5 +16,8 @@
 #define PEER_PORT 8080
 #define BUFFER_SIZE (1<<13)
 #define ll long long
+#define uchar unsigned char
+
+using namespace std;
 
 #endif
