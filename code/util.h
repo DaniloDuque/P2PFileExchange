@@ -12,6 +12,13 @@
 #include <utility>
 #include <fstream>
 #include <vector>
+#include <sys/socket.h>
+#include <stdlib.h>
+#include <cstring>
+#include <stdarg.h>
+#include <limits>
+#include <cstdlib>
+#include <netdb.h>
 
 #define INDEX_PORT 8080
 #define INDEX_IP "6.tcp.ngrok.k"
