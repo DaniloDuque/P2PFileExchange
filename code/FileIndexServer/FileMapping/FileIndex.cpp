@@ -2,7 +2,7 @@
 #include "FileInfo.h"
 
 template<typename T>
-void FileIndex<T>::update(PeerFileDTO dto){
+void FileIndex<T>::update(PeerFileDTO<T> dto){
     FileInfo<T> cur(dto.h1, dto.h2, dto.size);
     auto it = info.find(cur);
     if(it!=info.end()){
@@ -15,6 +15,6 @@ void FileIndex<T>::update(PeerFileDTO dto){
 template<typename T>
 FileInfo<T> FileIndex<T>::find(string alias){
     for(auto &p : info){
-        if(p.snd.exists(alias)) p.snd;
-    }return r;
+        if(p.snd.exists(alias)) return p.snd;
+    }return {};
 }

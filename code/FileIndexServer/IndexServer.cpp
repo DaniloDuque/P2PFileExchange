@@ -10,3 +10,8 @@ template<typename T>
 FileInfo<T> IndexServer<T>::findFile(string alias){
     return index.find(alias);
 }
+
+template<typename T>
+void IndexServer<T>::handleClient() {
+    std::cout << "Managing client on index server!" << std::endl;
+}

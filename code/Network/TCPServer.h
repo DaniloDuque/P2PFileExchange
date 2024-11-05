@@ -1,13 +1,13 @@
-#ifndef TCPSERVER_HEADER
-#define TCPSERVER_HEADER
+#ifndef TCP_SERVER_HEADER
+#define TCP_SERVER_HEADER
 
 #include "../util.h"
 
 class TCPServer {
 
-private:
+protected:
     int port;
-    virtual void handleClient(int) const;
+    virtual void handleClient(int) = 0;
 
 public:
     TCPServer(int);

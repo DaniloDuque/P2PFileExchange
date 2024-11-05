@@ -14,7 +14,7 @@ private:
     void addPeer(vector<PeerFileDTO<T>>);
     FileInfo<T> findFile(string);
 public: 
-    void handleClient() const override;
+    void handleClient() override;
 };
 
 #include "IndexServer.cpp"
