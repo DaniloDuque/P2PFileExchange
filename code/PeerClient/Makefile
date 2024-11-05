@@ -1,4 +1,4 @@
-SRC = MainServer.cpp
+SRC = Server.cpp
 
 EXEC = a.out
 
@@ -11,7 +11,7 @@ $(EXEC): $(SRC)
 	$(CC) $(CFLAGS) -o $(EXEC) $(SRC) -lm
 
 run: $(EXEC)
-	./$(EXEC) 8080
+	./$(EXEC) 8080 2.tcp.ngrok.io 17804
 
 clean:
 	rm -f $(EXEC)

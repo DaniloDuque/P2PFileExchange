@@ -40,9 +40,9 @@ int main(int argc, char const *argv[]) {
     
     list = fileDirectoryReader(directory);
     std::string package = "1 ";
-    for (int i = 0; i < list.size(); i++) {
+    for (int i = 0; i < (int)list.size(); i++) {
         package += list[i].serialize();
-        if (i != list.size() - 1) {
+        if (i != (int)list.size() - 1) {
             package += ' ';
         }
     }
