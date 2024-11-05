@@ -7,7 +7,7 @@ int main(int argc, char const *argv[]) {
         return 1;
     }
     int port = std::stoi(argv[1]);
-    IndexServer<int> server(port);
+    IndexServer<ll> server(port);
     server.run();
     return 0;
 }

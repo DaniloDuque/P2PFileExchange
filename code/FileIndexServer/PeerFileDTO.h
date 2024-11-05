@@ -22,9 +22,9 @@ struct PeerFileDTO {
         getline(ss, h2_str, ',');
         getline(ss, size_str, ',');
         getline(ss, peerFileDTO.alias, ',');
-        peerFileDTO.h1 = static_cast<T>(stoi(h1_str));
-        peerFileDTO.h2 = static_cast<T>(stoi(h2_str));
-        peerFileDTO.size = static_cast<T>(stoi(size_str));
+        peerFileDTO.h1 = static_cast<T>(stoll(h1_str));
+        peerFileDTO.h2 = static_cast<T>(stoll(h2_str));
+        peerFileDTO.size = static_cast<T>(stoll(size_str));
         string peerInfo_str;
         getline(ss, peerInfo_str); 
         peerFileDTO.info = PeerInfo::deserialize(peerInfo_str);
