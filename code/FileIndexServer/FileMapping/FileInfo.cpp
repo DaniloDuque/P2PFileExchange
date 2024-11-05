@@ -73,4 +73,3 @@ FileInfo<T> FileInfo<T>::deserialize(const string& data) {
     }
     return fileInfo;
 }
-

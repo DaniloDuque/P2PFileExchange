@@ -11,8 +11,8 @@ int main(int argc, char const *argv[]) {
     std::string indexIp = argv[2];
     std::string indexPort = argv[3];
 
-    vector<PeerFileDTO<long long>> list;
-    std::string directory = "FileReader/testDirectory";
+    //vector<PeerFileDTO<long long>> list;
+    //std::string directory = "FileReader/testDirectory";
     
     int clientSocket = socket(AF_INET, SOCK_STREAM, 0);
     if (clientSocket < 0) {
@@ -38,22 +38,26 @@ int main(int argc, char const *argv[]) {
         return -1;
     }
     
-    list = fileDirectoryReader(directory);
-    std::string package = "1 ";
-    for (int i = 0; i < (int)list.size(); i++) {
-        package += list[i].serialize();
-        if (i != (int)list.size() - 1) {
-            package += ' ';
-        }
-    }
+    //list = fileDirectoryReader(directory);
+    std::string package = "2 first";
+    //for (int i = 0; i < (int)list.size(); i++) {
+    //    package += list[i].serialize();
+    //    if (i != (int)list.size() - 1) {
+    //        package += ' ';
+    //    }
+    //}
     
     if (send(clientSocket, package.c_str(), package.size(), 0) < 0) {
         std::cerr << "Error sending the package" << std::endl;
         close(clientSocket);
         return -1;
     }
-
     puts("Package sent!");
+
+    char buffer[BUFFER_SIZE] = {};
+    read(client_socket, buffer, BUFFER_SIZE);
+    string rqst = buffer;
+    cout<<rqst<<endl;
     close(clientSocket);
     return 0;
 }
