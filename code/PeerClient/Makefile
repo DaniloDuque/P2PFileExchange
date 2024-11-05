@@ -11,7 +11,7 @@ $(EXEC): $(SRC)
 	$(CC) $(CFLAGS) -o $(EXEC) $(SRC) -lm
 
 run: $(EXEC)
-	./$(EXEC) 8080 2.tcp.ngrok.io 17804
+	./$(EXEC) 8080 2.tcp.ngrok.io 18297 
 
 clean:
 	rm -f $(EXEC)
