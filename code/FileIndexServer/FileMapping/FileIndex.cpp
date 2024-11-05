@@ -17,8 +17,9 @@ void FileIndex<T>::update(PeerFileDTO<T> dto){
 } 
 
 template<typename T>
-FileInfo<T> FileIndex<T>::find(string alias){
-    for(auto &p : info){
-        if(p.snd.exists(alias)) return p.snd;
-    }return {};
+FileInfo<T>* FileIndex<T>::find(string alias) {
+    for (auto &p : info) {
+        if (p.second->exists(alias)) return p.second.get(); 
+    }
+    return nullptr; 
 }

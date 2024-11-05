@@ -13,13 +13,18 @@ void IndexServer<T>::addPeer(vector<PeerFileDTO<T>> peerFiles){
 }
 
 template<typename T>
-FileInfo<T> IndexServer<T>::findFile(string alias){
+FileInfo<T>* IndexServer<T>::findFile(string alias){
     return index.find(alias);
 }
 
 template<typename T>
-void IndexServer<T>::handleFindFile(string rqst, int client_socket){
-    cout<<client_socket<<' '<<rqst<<endl;
+void IndexServer<T>::handleFindFile(string fileName, int client_socket){
+    FileInfo<T>* file = findFile(fileName);
+    string rsp;
+    if(file == nullptr) rsp = "1";
+    else rsp = "0 " + file->serialize(); 
+    send(client_socket, rsp.c_str(), rsp.size(), 0);
+    //TODO: receive acknowledge to close the socket
 }
 
 template<typename T>
@@ -38,7 +43,7 @@ void IndexServer<T>::handleClient(int client_socket) {
     read(client_socket, buffer, BUFFER_SIZE);
     string rqst = buffer;
     if(rqst.empty()) return;
-    if(rqst[0]=='1') handleAddPeer(rqst.substr(1, rqst.size()));
-    if(rqst[0]=='2') handleFindFile(rqst.substr(1, rqst.size()), client_socket);
+    if(rqst[0]=='1') handleAddPeer(rqst.substr(2, rqst.size()));
+    if(rqst[0]=='2') handleFindFile(rqst.substr(2, rqst.size()), client_socket);
 }
 

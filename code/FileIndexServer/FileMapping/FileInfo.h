@@ -27,6 +27,8 @@ public:
     T getHash2() const;
     void knownAs(string, PeerInfo);
     bool exists(string);
+    string serialize() const;         
+    static FileInfo<T> deserialize(const string&);
     bool operator == (const FileInfo&) const;
     bool operator<(const FileInfo&) const;
 };

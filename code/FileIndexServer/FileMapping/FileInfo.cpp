@@ -1,4 +1,6 @@
 #include "FileInfo.h"
+#include <sstream>
+#include <string>
 
 template<typename T>
 FileInfo<T>::FileInfo(T h1, T h2, T sz, string alias, PeerInfo info) 
@@ -47,4 +49,28 @@ bool FileInfo<T>::operator==(const FileInfo& other) const {
     return hash1 == other.hash1 && hash2 == other.hash2 && size == other.size;
 }
 
+template<typename T>
+string FileInfo<T>::serialize() const {
+    string rsp = to_string(hash1) + ',' + to_string(hash2) + ',' + to_string(size); 
+    for(auto &pf : addr) rsp += " " + pf.serialize();
+    return rsp;
+}
+
+template<typename T>
+FileInfo<T> FileInfo<T>::deserialize(const string& data) {
+    istringstream ss(data);
+    string token;
+    getline(ss, token, ',');
+    T h1 = (stoll(token)); 
+    getline(ss, token, ',');
+    T h2 = (stoll(token)); 
+    getline(ss, token, ' '); 
+    T sz = (stoll(token)); 
+    FileInfo<T> fileInfo(h1, h2, sz);
+    while (getline(ss, token, ' ')) {
+        PeerInfo peerInfo = PeerInfo::deserialize(token);
+        fileInfo.addr.push_back(peerInfo);
+    }
+    return fileInfo;
+}
 

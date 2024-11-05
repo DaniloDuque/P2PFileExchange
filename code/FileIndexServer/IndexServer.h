@@ -11,7 +11,7 @@ class IndexServer : public TCPServer {
 private:
     FileIndex<T> index;
     void addPeer(vector<PeerFileDTO<T>>);
-    FileInfo<T> findFile(string);
+    FileInfo<T>* findFile(string);
     void handleClient(int) override;
     void handleAddPeer(string);
     void handleFindFile(string, int);

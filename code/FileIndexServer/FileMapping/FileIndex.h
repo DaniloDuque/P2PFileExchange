@@ -14,7 +14,7 @@ private:
     map<FileInfo<T>, shared_ptr<FileInfo<T>>> info;
 public:
     FileIndex();
-    FileInfo<T> find(string); 
+    FileInfo<T>* find(string); 
     void update(PeerFileDTO<T>);
 };
 
