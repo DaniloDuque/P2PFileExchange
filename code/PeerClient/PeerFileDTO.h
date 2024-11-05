@@ -10,7 +10,7 @@ struct PeerFileDTO {
     std::string alias;
     PeerInfo info;
     std::string serialize() const {
-        return to_string(h1) + ',' + to_string(h2) + ',' + to_string(size) + ',' + alias + info.serialize();
+        return to_string(h1) + ',' + to_string(h2) + ',' + to_string(size) + ',' + alias + ',' +  info.serialize();
     }
 
     static PeerFileDTO deserialize(const string& data) {
