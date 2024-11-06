@@ -12,6 +12,8 @@ private:
 
 public:
 
+    PeerServer(int);
+
 
 
 };

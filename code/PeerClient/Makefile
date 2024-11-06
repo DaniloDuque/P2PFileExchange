@@ -1,6 +1,6 @@
-SRC = TestFindFile.cpp
+SRC = RunPeer.cpp
 
-EXEC = findfile
+EXEC = a.out
 
 CC = g++
 CFLAGS = -Wall -Wextra
@@ -11,7 +11,7 @@ $(EXEC): $(SRC)
 	$(CC) $(CFLAGS) -o $(EXEC) $(SRC) -lm
 
 run: $(EXEC)
-	./$(EXEC) 8080 2.tcp.ngrok.io 18297 
+	./$(EXEC) 8080 2.tcp.ngrok.io 18297 FileReader/testDirectory 
 
 clean:
 	rm -f $(EXEC)

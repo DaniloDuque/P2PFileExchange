@@ -1,4 +1,4 @@
-SRC = MainServer.cpp
+SRC = RunIndexServer.cpp
 
 EXEC = a.out
 
