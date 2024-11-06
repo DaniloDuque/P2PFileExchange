@@ -30,7 +30,7 @@ using namespace std;
 string sockaddr_in6_to_string(const sockaddr_in6& addr) {
     char str[INET6_ADDRSTRLEN]; 
     if (inet_ntop(AF_INET6, &addr.sin6_addr, str, sizeof(str)) == nullptr) {
-        return "Error en conversión"; 
+        return "Error in IP conversion"; 
     }
     return string(str); 
 }
