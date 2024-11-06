@@ -21,9 +21,6 @@
 #include <netdb.h>
 #include <sstream>
 
-#define INDEX_PORT 8080
-#define INDEX_IP "6.tcp.ngrok.k"
-#define PEER_PORT 8080
 #define BUFFER_SIZE (1<<13)
 #define ll long long
 #define uchar unsigned char
