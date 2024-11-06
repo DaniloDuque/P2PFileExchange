@@ -1,8 +1,8 @@
 #include <filesystem>
 #include <iostream>
 #include <utility>
-#include "../Hash/HashGenerator.h"
-#include "PeerFileDTO.h"
+#include "../../Hash/HashGenerator.h"
+#include "../PeerFileDTO.h"
 
 std::vector<PeerFileDTO<long long>>  fileDirectoryReader(std::string & directory_name) {
     const std::filesystem::path sandbox{directory_name};

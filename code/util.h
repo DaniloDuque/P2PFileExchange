@@ -35,4 +35,11 @@ string sockaddr_in6_to_string(const sockaddr_in6& addr) {
     return string(str); 
 }
 
+string readBuffer(int socket, int bufferSize){
+    char buffer[bufferSize] = {};
+    read(indexSocket, buffer, bufferSize);
+    string info = buffer;
+    return info;
+}
+
 #endif
