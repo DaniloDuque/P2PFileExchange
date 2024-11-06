@@ -3,6 +3,7 @@
 #include "FileMapping/FileInfo.h"
 #include "../util.h"
 #include "PeerFileDTO.h"
+#include <unistd.h>
 
 template<typename T>
 IndexServer<T>::IndexServer(int p) : TCPServer(p) {}
@@ -28,7 +29,6 @@ void IndexServer<T>::handleFindFile(string fileName, int client_socket){
     read(client_socket, ack, sizeof(char));
     string rslt = ack;
     cout<<"Received acknowledge! "<<rslt<<endl;
-    //TODO: receive acknowledge to close the socket
 }
 
 template<typename T>
@@ -49,5 +49,6 @@ void IndexServer<T>::handleClient(int client_socket) {
     if(rqst.empty()) return;
     if(rqst[0]=='1') handleAddPeer(rqst.substr(2, rqst.size()));
     if(rqst[0]=='2') handleFindFile(rqst.substr(2, rqst.size()), client_socket);
+    close(client_socket);
 }
 
