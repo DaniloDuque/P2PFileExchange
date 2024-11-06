@@ -26,6 +26,8 @@ void IndexServer<T>::handleFindFile(string fileName, int client_socket){
     send(client_socket, rsp.c_str(), rsp.size(), 0);
     char ack[1] = {};
     read(client_socket, ack, sizeof(char));
+    string rslt = ack;
+    cout<<"Received acknowledge! "<<rslt<<endl;
     //TODO: receive acknowledge to close the socket
 }
 
