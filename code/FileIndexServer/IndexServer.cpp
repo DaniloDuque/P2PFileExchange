@@ -25,7 +25,7 @@ void IndexServer<T>::handleFindFile(string fileName, int client_socket){
     else rsp = "0 " + file->serialize(); 
     send(client_socket, rsp.c_str(), rsp.size(), 0);
     char ack;
-    //read(client_socket, ack, sizeof(char));
+    read(client_socket, ack, sizeof(char));
     //TODO: receive acknowledge to close the socket
 }
 
