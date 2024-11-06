@@ -25,6 +25,19 @@ struct PeerInfo {
         peerInfo.port = stoi(port_str);
         return peerInfo;
     }
+
+    bool operator<(const PeerInfo& other) const {
+        int cmp = memcmp(&ip.sin6_addr, &other.ip.sin6_addr, sizeof(in6_addr));
+        if (cmp != 0) {
+            return cmp < 0;
+        }
+        return port < other.port;
+    }
+
+    bool operator==(const PeerInfo& other) const {
+        return memcmp(&ip.sin6_addr, &other.ip.sin6_addr, sizeof(in6_addr)) == 0 && port == other.port;
+    }
+
 };
 
 #endif

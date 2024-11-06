@@ -11,7 +11,7 @@ FileInfo<T>::FileInfo(T h1, T h2, T sz, string alias, PeerInfo info)
 template<typename T>
 void FileInfo<T>::knownAs(string alias, PeerInfo info) {
     aka.insert(alias);
-    addr.push_back(info);
+    addr.insert(info);
 }
 
 template<typename T>
@@ -69,7 +69,7 @@ FileInfo<T> FileInfo<T>::deserialize(const string& data) {
     FileInfo<T> fileInfo(h1, h2, sz);
     while (getline(ss, token, ' ')) {
         PeerInfo peerInfo = PeerInfo::deserialize(token);
-        fileInfo.addr.push_back(peerInfo);
+        fileInfo.addr.insert(peerInfo);
     }
     return fileInfo;
 }

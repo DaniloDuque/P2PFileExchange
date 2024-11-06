@@ -17,7 +17,7 @@ class FileInfo {
 private:
     const T hash1, hash2, size;
     Trie<string> aka;
-    vector<PeerInfo> addr; 
+    set<PeerInfo> addr; 
 
 public:
     FileInfo(T, T, T, string, PeerInfo);

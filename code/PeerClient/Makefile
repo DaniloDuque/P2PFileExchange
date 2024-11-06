@@ -1,6 +1,6 @@
-SRC = Server.cpp
+SRC = TestFindFile.cpp
 
-EXEC = a.out
+EXEC = findfile
 
 CC = g++
 CFLAGS = -Wall -Wextra
