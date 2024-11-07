@@ -17,6 +17,19 @@ string getFileInfo(int indexSocket, string &filename){
     return info;
 }
 
+void requestFileChunk(FileRequestDTO<ll> fileInfo, PeerInfo peerInfo){
+
+}
+
+void requestFile(){
+
+}
+
+void downloadFile(FileInfo<ll> fileInfo){
+
+
+}
+
 int main(int argc, char const *argv[]) {
     if (argc < 5) {  
         cerr << "Usage: " << argv[0] << " <mainPort> <indexIp> <indexPort> <directory>" << endl;
@@ -28,6 +41,7 @@ int main(int argc, char const *argv[]) {
     if(finfo.empty()) {cerr<<"Bad Response from index"<<endl; return -1;}
     if(finfo[0]!='0') {cerr<<"Requested file not found in the network"<<endl; return 0;}
     FileInfo<ll> info = FileInfo<ll>::deserialize(finfo.substr(1, finfo.size()));
+    downloadFile(info);
     cout<<finfo<<endl;
     return 0;
 }
