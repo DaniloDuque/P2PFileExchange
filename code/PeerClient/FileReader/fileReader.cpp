@@ -4,8 +4,6 @@
 #include "../../Hash/HashGenerator.h"
 #include "../PeerFileDTO.h"
 
-// TODO: Test this function, because, second file is not indexing
-
 vector<PeerFileDTO<ll>>  fileDirectoryReader(int port, string &ip, string &directory_name) {
     const filesystem::path sandbox{directory_name};
     vector<PeerFileDTO<ll>> res;
@@ -21,14 +19,11 @@ vector<PeerFileDTO<ll>>  fileDirectoryReader(int port, string &ip, string &direc
         DTO.alias = name;
         PeerInfo info;
         info.ip.sin6_family = AF_INET6;
-
-        cout<<name<<endl;
-
+        cout<<"Indexing: "<<name<<endl;
         inet_pton(AF_INET6, ip.c_str(), &info.ip.sin6_addr);
         info.ip.sin6_port = htons(8080);
         info.port = port;
         DTO.info = info;
-        
         res.push_back(DTO);
     }
     return res;

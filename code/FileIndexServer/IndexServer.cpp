@@ -20,6 +20,7 @@ FileInfo<T>* IndexServer<T>::findFile(string alias){
 
 template<typename T>
 void IndexServer<T>::handleFindFile(string fileName, int client_socket){
+    cout<<"Searching for "<<filename<<" in the network"<<endl;
     FileInfo<T>* file = findFile(fileName);
     string rsp;
     if(file == nullptr) rsp = "1";
@@ -38,7 +39,6 @@ void IndexServer<T>::handleAddPeer(string rqst){
     istringstream stream(rqst);
     string file;
     while(stream >> file){
-        cout<<file<<endl;
         files.push_back(PeerFileDTO<T>::deserialize(file));
     }
     addPeer(files);
