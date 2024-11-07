@@ -37,7 +37,10 @@ void IndexServer<T>::handleAddPeer(string rqst){
     vector<PeerFileDTO<T>> files;
     istringstream stream(rqst);
     string file;
-    while(stream >> file) files.push_back(PeerFileDTO<T>::deserialize(file));
+    while(stream >> file){
+        cout<<file<<endl;
+        files.push_back(PeerFileDTO<T>::deserialize(file));
+    }
     addPeer(files);
 }
 
