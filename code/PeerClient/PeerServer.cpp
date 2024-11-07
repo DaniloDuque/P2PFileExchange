@@ -50,14 +50,20 @@ template<typename T>
 void PeerServer<T>::handleClient(int peerSocket) {
     string rqst = readBuffer(peerSocket, BUFFER_SIZE);
     if(rqst.size()) sendFilePart(peerSocket, FileRequestDTO<T>::deserialize(rqst));
-    //TODO: receive acknowledge from peer to close the socket
+    readBuffer(peerSocket, BUFFER_SIZE); //TODO: needs testing
     close(peerSocket); 
 }
 
 template<typename T>
 void PeerServer<T>::sendFilePart(int peerSocket, FileRequestDTO<T> rqst){
     FILE* file = open(searchFile(rqst));
-    //TODO: send requested chunk fo the file
+    fseek(file, rqst.startByte, SEEK_SET);
+    char bytes[BUFFER_SIZE];
+    for(T leftBytes = rqst.chunkSize; leftBytes > 0; leftBytes-=BUFFER_SIZE){
+        size_t result = fread(buffer, 1, BUFFER_SIZE, file);
+        send(peerSocket, buffer, BUFFER_SIZE, 0);
+    }
+    
 }
 
 
