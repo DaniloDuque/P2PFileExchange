@@ -1,6 +1,4 @@
 #include "PeerServer.h"
-#include "FileExchange/FileRequestDTO.h"
-#include "PeerFileDTO.h"
 
 template<typename T>
 PeerServer<T>::PeerServer(int p, string directory) : TCPServer(p) {

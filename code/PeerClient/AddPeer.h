@@ -2,7 +2,7 @@
 #define ADD_PEER_HEADER
 
 #include "PeerFileDTO.h"
-#include "PeerServer.h"
+#include "FileExchange/PeerServer.h"
 
 void addPeer(string &indexIp, string &indexPort, string &directory){
 

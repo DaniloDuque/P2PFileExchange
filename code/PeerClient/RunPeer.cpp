@@ -1,6 +1,6 @@
 #include "../util.h"
 #include "AddPeer.h"
-#include "UserListener/UserListener.h"
+#include "FileFinder/FileFinder.cpp"
 
 int main(int argc, char const *argv[]) {
     if (argc < 5) {  
@@ -11,7 +11,7 @@ int main(int argc, char const *argv[]) {
     thread tadd(&addPeer, ref(indexIp), ref(indexPort), ref(directory));
     PeerServer<ll> server(stoi(mainPort), directory);
     thread tserver(&PeerServer<ll>::run, &server);
-    thread tui(&listenUser, ref(indexIp), ref(indexPort));
-    tadd.join(); tserver.join(); tui.join(); 
+    //thread tui(&listenUser, ref(indexIp), ref(indexPort)); // TODO: make user interface a thread
+    tadd.join(); tserver.join(); //tui.join(); 
     return 0;
 }

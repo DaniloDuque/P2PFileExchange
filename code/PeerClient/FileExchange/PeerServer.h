@@ -1,11 +1,11 @@
 #ifndef PEER_SERVER_HEADER
 #define PEER_SERVER_HEADER
 
-#include "../util.h"
-#include "../Network/TCPServer.h"
-#include "FileExchange/FileRequestDTO.h"
-#include "FileExchange/HashedFile.h"
-#include "FileReader/fileReader.cpp"
+#include "../../util.h"
+#include "../../Network/TCPServer.h"
+#include "FileRequestDTO.h"
+#include "HashedFile.h"
+#include "../FileReader/fileReader.cpp"
 
 template<typename T>
 class PeerServer : public TCPServer {
