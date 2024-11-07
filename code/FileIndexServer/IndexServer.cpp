@@ -20,7 +20,7 @@ FileInfo<T>* IndexServer<T>::findFile(string alias){
 
 template<typename T>
 void IndexServer<T>::handleFindFile(string fileName, int client_socket){
-    cout<<"Searching for "<<filename<<" in the network"<<endl;
+    cout<<"Searching for "<<fileName<<" in the network"<<endl;
     FileInfo<T>* file = findFile(fileName);
     string rsp;
     if(file == nullptr) rsp = "1";
