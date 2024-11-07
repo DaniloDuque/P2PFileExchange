@@ -20,6 +20,9 @@
 #include <cstdlib>
 #include <netdb.h>
 #include <sstream>
+#include <algorithm> 
+#include <cctype>
+#include <set>
 
 #define BUFFER_SIZE (1<<13)
 #define ll long long
@@ -37,9 +40,14 @@ string sockaddr_in6_to_string(const sockaddr_in6& addr) {
 
 string readBuffer(int socket, int bufferSize){
     char buffer[bufferSize] = {};
-    read(indexSocket, buffer, bufferSize);
+    read(socket, buffer, bufferSize);
     string info = buffer;
     return info;
+}
+
+string toLower(string s){
+    transform(s.begin(), s.end(), s.begin(), [](unsigned char c){ return tolower(c);});
+    return s;
 }
 
 #endif

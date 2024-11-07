@@ -9,7 +9,7 @@ int main(int argc, char const *argv[]) {
     }
     string mainPort = argv[1], indexIp = argv[2], indexPort = argv[3], directory = argv[4];
     thread tadd(&addPeer, ref(indexIp), ref(indexPort), ref(directory));
-    PeerServer<ll> server(stoi(mainPort));
+    PeerServer<ll> server(stoi(mainPort), directory);
     thread tserver(&PeerServer<ll>::run, &server);
     thread tui(&listenUser, ref(indexIp), ref(indexPort));
     tadd.join(); tserver.join(); tui.join(); 

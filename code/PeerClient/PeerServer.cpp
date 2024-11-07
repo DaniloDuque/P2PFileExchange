@@ -40,8 +40,8 @@ int PeerServer<T>::connectToIndex(string &indexIp, string &indexPort){
 }
 
 template<typename T>
-std::string searchFile(const FileRequestDTO<T>& dto){
-    auto it = HashedFiles.find(HashedFile<T>{dto.h1, dto.h2, dto.size});
+string PeerServer<T>::searchFile(FileRequestDTO<T> dto){
+    auto it = HashedFiles.find(HashedFile<T>{dto.h1, dto.h2, dto.size, ""});
     if(it == HashedFiles.end()) return "";  
     return it->alias;  
 }
@@ -50,23 +50,25 @@ template<typename T>
 void PeerServer<T>::handleClient(int peerSocket) {
     string rqst = readBuffer(peerSocket, BUFFER_SIZE);
     if(rqst.size()) sendFilePart(peerSocket, FileRequestDTO<T>::deserialize(rqst));
-    readBuffer(peerSocket, BUFFER_SIZE); //TODO: needs testing
+    readBuffer(peerSocket, 1); 
     close(peerSocket); 
 }
 
 template<typename T>
 void PeerServer<T>::sendFilePart(int peerSocket, FileRequestDTO<T> rqst){
-    FILE* file = open(searchFile(rqst));
+    FILE* file = fopen(searchFile(rqst).c_str(), "rb");
     fseek(file, rqst.startByte, SEEK_SET);
-    char bytes[BUFFER_SIZE];
-    for(T leftBytes = rqst.chunkSize; leftBytes > 0; leftBytes-=BUFFER_SIZE){
-        size_t result = fread(buffer, 1, BUFFER_SIZE, file);
-        send(peerSocket, buffer, BUFFER_SIZE, 0);
-    }
-    
+    char buffer[BUFFER_SIZE];
+    T leftBytes = rqst.chunkSize;
+    while (leftBytes > 0) {
+        size_t bytesToRead = min(leftBytes, static_cast<T>(BUFFER_SIZE));
+        size_t bytesRead = fread(buffer, 1, bytesToRead, file);
+        if (bytesRead > 0) {
+            send(peerSocket, buffer, bytesRead, 0); 
+            leftBytes -= bytesRead;
+        } else {
+            cerr << "Error reading from file or end of file reached." << endl;
+            break;
+        }
+    }fclose(file); 
 }
-
-
-
-
-

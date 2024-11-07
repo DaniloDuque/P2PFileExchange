@@ -45,10 +45,9 @@ void IndexServer<T>::handleClient(int client_socket) {
     puts("Request received!");
     char buffer[BUFFER_SIZE] = {};
     read(client_socket, buffer, BUFFER_SIZE);
-    string rqst = buffer;
+    string rqst = toLower(buffer);
     if(rqst.empty()) return;
     if(rqst[0]=='1') handleAddPeer(rqst.substr(2, rqst.size()));
     if(rqst[0]=='2') handleFindFile(rqst.substr(2, rqst.size()), client_socket);
     close(client_socket);
 }
-
