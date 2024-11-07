@@ -24,7 +24,10 @@ int main(int argc, char const *argv[]) {
     }
     string mainPort = argv[1], indexIp = argv[2], indexPort = argv[3], filename = argv[4];
     int indexSocket = PeerServer<ll>::connectToIndex(indexIp, indexPort);
-    FileInfo<ll> info = FileInfo<ll>::deserialize(getFileInfo(indexSocket, filename));
-    // TODO: now having all the peers that have the file, request it to them
+    string finfo = getFileInfo(indexSocket, filename);
+    if(finfo.empty()) {cerr<<"Bad Response from index"<<endl; return -1;}
+    if(finfo[0]!='0') {cerr<<"Requested file not found in the network"<<endl; return 0;}
+    FileInfo<ll> info = FileInfo<ll>::deserialize(finfo.substr(1, finfo.size()));
+    cout<<finfo<<endl;
     return 0;
 }

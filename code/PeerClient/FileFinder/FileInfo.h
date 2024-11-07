@@ -8,10 +8,9 @@ using namespace std;
 
 template<typename T>
 class FileInfo {
-private:
-    const T hash1, hash2, size;
-    vector<PeerInfo> addr; 
 public:
+    const T hash1, hash2, size;
+    vector<PeerInfo> addr;
     FileInfo(T, T, T);
     static FileInfo<T> deserialize(string);
 };

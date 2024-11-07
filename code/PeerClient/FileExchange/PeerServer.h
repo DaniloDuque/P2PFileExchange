@@ -20,7 +20,7 @@ private:
 public:
 
     static int connectToIndex(string&, string&);
-    PeerServer(int, string);
+    PeerServer(int, string, string);
 
 };
 

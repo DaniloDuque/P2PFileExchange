@@ -4,7 +4,7 @@
 #include "PeerFileDTO.h"
 #include "FileExchange/PeerServer.h"
 
-void addPeer(string &indexIp, string &indexPort, string &directory){
+void addPeer(string &port, string &ip, string &indexIp, string &indexPort, string &directory){
 
     int clientSocket = socket(AF_INET, SOCK_STREAM, 0);
     if (clientSocket < 0) {
@@ -30,7 +30,7 @@ void addPeer(string &indexIp, string &indexPort, string &directory){
         return;
     }
     
-    vector<PeerFileDTO<ll>> list = fileDirectoryReader(directory);
+    vector<PeerFileDTO<ll>> list = fileDirectoryReader(stoi(port), ip, directory);
     string package = "1 ";
 
     for (int i = 0; i < (int)list.size(); i++) {
