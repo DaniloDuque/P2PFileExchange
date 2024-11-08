@@ -32,7 +32,6 @@ void IndexServer<T>::handleFindFile(string fileName, int client_socket){
     cout<<"Received acknowledge! "<<rslt<<endl;
 }
 
-// TODO: test this function because second file isnt indexing
 template<typename T>
 void IndexServer<T>::handleAddPeer(string rqst){
     vector<PeerFileDTO<T>> files;

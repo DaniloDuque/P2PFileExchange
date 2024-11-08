@@ -2,8 +2,6 @@
 #include "../FileExchange/PeerServer.h"
 #include "FileInfo.h"
 
-mutex mtx;
-
 string getFileInfo(int indexSocket, string &filename){
     string package = "2 " + filename;
     if (send(indexSocket, package.c_str(), package.size(), 0) < 0) {
@@ -19,13 +17,21 @@ string getFileInfo(int indexSocket, string &filename){
     return info;
 }
 
-// TODO: request the file part and save it to disk
-void requestFileChunk(FileRequestDTO<ll> fileInfo, PeerInfo peerInfo, string name){
-    mtx.lock();
-    cout<<"FileRequestDTO: "<<fileInfo.serialize()<<endl;
-    cout<<"PeerInfo: "<<peerInfo.serialize()<<endl;
-    cout<<"name: "<<name<<endl;
-    mtx.unlock();
+void requestFileChunk(FileRequestDTO<ll> fileInfo, PeerInfo peerInfo, string name) {
+    int peerSocket = PeerServer<ll>::connectToIndex(sockaddr_in6_to_string(peerInfo.ip), to_string(peerInfo.port));
+    string finfo = fileInfo.serialize();
+    send(peerSocket, finfo.c_str(), finfo.size(), 0);
+    FILE* file = fopen(name.c_str(), "wb");
+    ll leftBytes = fileInfo.chunkSize;
+    while (leftBytes > 0) {
+        size_t bytesToReceive = min(leftBytes, static_cast<ll>(BUFFER_SIZE));
+        string buffer = readBuffer(peerSocket, bytesToReceive);
+        if(buffer.empty()) {cerr << "Error receiving data from socket." << endl; return;}
+        fwrite(buffer.c_str(), 1, buffer.size(), file);
+        leftBytes -= buffer.size();
+    }fclose(file);
+    sendAcknowledge(peerSocket);
+    close(peerSocket);
 }
 
 void requestFile(FileInfo<ll> fileInfo) {
@@ -39,36 +45,33 @@ void requestFile(FileInfo<ll> fileInfo) {
         });
         i++; startByte += chunkSize + (mod > 0); mod--;
     }
-
     for (auto& t : threads) {
         if (t.joinable()) t.join();
     }
 }
 
-void downloadFile(FileInfo<ll> fileInfo, string directory, string fileName){
-    cout<<directory<<endl;
+void downloadFile(FileInfo<ll> fileInfo, string directory, string fileName) {
+    cout << directory << endl;
     requestFile(fileInfo);
-    const std::filesystem::path sandbox{directory};
-    FILE * file = fopen(fileName.c_str(), "wb");
-    for(auto const & dirEntry : std::filesystem::directory_iterator{sandbox}) {
-        FILE * cub = fopen(dirEntry.path().c_str(), "rb");
-        FILE * cubCopy = fopen(dirEntry.path().c_str(), "rb");
+    const filesystem::path sandbox{directory};
+    FILE* file = fopen(fileName.c_str(), "wb");
+    vector<filesystem::path> files;
+    for (auto& dirEntry : filesystem::directory_iterator{sandbox}) files.push_back(dirEntry.path());
+    sort(files.begin(), files.end());
+    for (const auto& filePath : files) {
+        FILE* cub = fopen(filePath.c_str(), "rb");
+        FILE* cubCopy = fopen(filePath.c_str(), "rb");
         char chC = fgetc(cubCopy);
         chC = fgetc(cubCopy);
         char ch = fgetc(cub);
-        while(chC != EOF) {
-
+        while (chC != EOF) {
             fprintf(file, "%c", ch);
             ch = fgetc(cub);
             chC = fgetc(cubCopy);
         }
-        fclose(cub);
-        fclose(cubCopy);
+        fclose(cub); fclose(cubCopy);
     }
     fclose(file);
-
-
-
 }
 
 int main(int argc, char const *argv[]) {

@@ -7,7 +7,7 @@ PeerServer<T>::PeerServer(int p, string ip, string directory) : TCPServer(p) {
 }
 
 template<typename T>
-int PeerServer<T>::connectToIndex(string &indexIp, string &indexPort){
+int PeerServer<T>::connectToIndex(string indexIp, string indexPort){
 
     int indexSocket = socket(AF_INET, SOCK_STREAM, 0);
     if (indexSocket < 0) {
