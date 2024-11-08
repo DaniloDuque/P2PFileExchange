@@ -35,8 +35,7 @@ void requestFile(FileInfo<ll> fileInfo) {
     vector<thread> threads;
     while (i < numPeers) {
         threads.emplace_back([&, i, startByte, chunkSize, mod]() {
-            requestFileChunk(FileRequestDTO<ll>{fileInfo.hash1, fileInfo.hash2, fileInfo.size, startByte, chunkSize + (mod > 0)}, 
-                             fileInfo.addr[i], to_string(i));
+            requestFileChunk(FileRequestDTO<ll>{fileInfo.hash1, fileInfo.hash2, fileInfo.size, startByte, chunkSize + (mod > 0)}, fileInfo.addr[i], to_string(i));
         });
         i++; startByte += chunkSize + (mod > 0); mod--;
     }
@@ -46,22 +45,23 @@ void requestFile(FileInfo<ll> fileInfo) {
     }
 }
 
-void downloadFile(FileInfo<ll> fileInfo){
+void downloadFile(FileInfo<ll> fileInfo, string directory){
+    cout<<directory<<endl;
     requestFile(fileInfo);
     // TODO: append all the file parts in order in a single file
 }
 
 int main(int argc, char const *argv[]) {
-    if (argc < 5) {  
+    if (argc < 6) {  
         cerr << "Usage: " << argv[0] << " <mainPort> <indexIp> <indexPort> <directory>" << endl;
         return -1;
     }
-    string mainPort = argv[1], indexIp = argv[2], indexPort = argv[3], filename = argv[4];
+    string mainPort=argv[1], indexIp=argv[2], indexPort=argv[3], filename=argv[4], directory=argv[5];
     int indexSocket = PeerServer<ll>::connectToIndex(indexIp, indexPort);
     string finfo = getFileInfo(indexSocket, filename);
     if(finfo.empty()) {cerr<<"Bad Response from index"<<endl; return -1;}
     if(finfo[0]!='0') {cerr<<"Requested file not found in the network"<<endl; return 0;}
     FileInfo<ll> info = FileInfo<ll>::deserialize(finfo.substr(1, finfo.size()));
-    downloadFile(info);
+    downloadFile(info, directory);
     return 0;
 }
