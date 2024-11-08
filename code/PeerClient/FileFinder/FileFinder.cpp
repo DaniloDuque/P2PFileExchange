@@ -45,10 +45,30 @@ void requestFile(FileInfo<ll> fileInfo) {
     }
 }
 
-void downloadFile(FileInfo<ll> fileInfo, string directory){
+void downloadFile(FileInfo<ll> fileInfo, string directory, string fileName){
     cout<<directory<<endl;
     requestFile(fileInfo);
-    // TODO: append all the file parts in order in a single file
+    const std::filesystem::path sandbox{directory};
+    FILE * file = fopen(fileName.c_str(), "wb");
+    for(auto const & dirEntry : std::filesystem::directory_iterator{sandbox}) {
+        FILE * cub = fopen(dirEntry.path().c_str(), "rb");
+        FILE * cubCopy = fopen(dirEntry.path().c_str(), "rb");
+        char chC = fgetc(cubCopy);
+        chC = fgetc(cubCopy);
+        char ch = fgetc(cub);
+        while(chC != EOF) {
+
+            fprintf(file, "%c", ch);
+            ch = fgetc(cub);
+            chC = fgetc(cubCopy);
+        }
+        fclose(cub);
+        fclose(cubCopy);
+    }
+    fclose(file);
+
+
+
 }
 
 int main(int argc, char const *argv[]) {
@@ -56,12 +76,12 @@ int main(int argc, char const *argv[]) {
         cerr << "Usage: " << argv[0] << " <mainPort> <indexIp> <indexPort> <directory>" << endl;
         return -1;
     }
-    string mainPort=argv[1], indexIp=argv[2], indexPort=argv[3], filename=argv[4], directory=argv[5];
+    string mainPort=argv[1], indexIp=argv[2], indexPort=argv[3], fileName=argv[4], directory=argv[5];
     int indexSocket = PeerServer<ll>::connectToIndex(indexIp, indexPort);
-    string finfo = getFileInfo(indexSocket, filename);
+    string finfo = getFileInfo(indexSocket, fileName);
     if(finfo.empty()) {cerr<<"Bad Response from index"<<endl; return -1;}
     if(finfo[0]!='0') {cerr<<"Requested file not found in the network"<<endl; return 0;}
     FileInfo<ll> info = FileInfo<ll>::deserialize(finfo.substr(1, finfo.size()));
-    downloadFile(info, directory);
+    downloadFile(info, directory, fileName);
     return 0;
 }
