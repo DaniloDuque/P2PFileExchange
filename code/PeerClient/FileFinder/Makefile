@@ -11,7 +11,7 @@ $(EXEC): $(SRC)
 	$(CC) $(CFLAGS) -o $(EXEC) $(SRC) -lm
 
 run: $(EXEC)
-	./$(EXEC) 8080 2.tcp.ngrok.io 11655 index.html saved 
+	./$(EXEC) 8484 192.168.86.25 8585 index.html saved 
 
 clean:
 	rm -f $(EXEC)
