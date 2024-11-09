@@ -55,7 +55,8 @@ void PeerServer<T>::handleClient(int peerSocket) {
 
 template<typename T>
 void PeerServer<T>::sendFilePart(int peerSocket, FileRequestDTO<T> rqst){
-    FILE* file = fopen(path+"/"+searchFile(rqst).c_str(), "rb");
+    string filePath = path + "/" + searchFile(rqst);
+    FILE* file = fopen(filePath.c_str(), "rb");
     cout<<rqst.startByte<<' '<<rqst.chunkSize<<endl;
     fseek(file, rqst.startByte, SEEK_SET);
     char buffer[BUFFER_SIZE];
