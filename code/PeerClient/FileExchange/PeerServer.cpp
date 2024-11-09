@@ -1,7 +1,7 @@
 #include "PeerServer.h"
 
 template<typename T>
-PeerServer<T>::PeerServer(int p, string ip, string directory) : TCPServer(p) {
+PeerServer<T>::PeerServer(int p, string ip, string directory) : TCPServer(p, directory) {
     vector<PeerFileDTO<T>> list = fileDirectoryReader(p, ip, directory);
     for(auto &pf : list) HashedFiles.emplace(pf.h1, pf.h2, pf.size, pf.alias);
 }
@@ -55,7 +55,7 @@ void PeerServer<T>::handleClient(int peerSocket) {
 
 template<typename T>
 void PeerServer<T>::sendFilePart(int peerSocket, FileRequestDTO<T> rqst){
-    FILE* file = fopen(searchFile(rqst).c_str(), "rb");
+    FILE* file = fopen(path+"/"+searchFile(rqst).c_str(), "rb");
     cout<<rqst.startByte<<' '<<rqst.chunkSize<<endl;
     fseek(file, rqst.startByte, SEEK_SET);
     char buffer[BUFFER_SIZE];

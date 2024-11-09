@@ -1,6 +1,9 @@
 #include "TCPServer.h"
 
+
 TCPServer::TCPServer(int p) : port(p) {} 
+
+TCPServer::TCPServer(int p, string dir) : port(p), path(dir) {} 
 
 void TCPServer::run() {
     struct sockaddr_in address;

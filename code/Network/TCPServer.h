@@ -7,10 +7,12 @@ class TCPServer {
 
 protected:
     int port;
+    string path;
     virtual void handleClient(int) = 0;
 
 public:
     TCPServer(int);
+    TCPServer(int, string);
     void run();
 };
 
