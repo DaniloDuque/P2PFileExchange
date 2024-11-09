@@ -60,18 +60,12 @@ void downloadFile(FileInfo<ll> fileInfo, string directory, string fileName) {
     sort(files.begin(), files.end());
     for (const auto& filePath : files) {
         FILE* cub = fopen(filePath.c_str(), "rb");
-        FILE* cubCopy = fopen(filePath.c_str(), "rb");
-        char chC = fgetc(cubCopy);
-        chC = fgetc(cubCopy);
         char ch = fgetc(cub);
-        while (chC != EOF) {
+        while (ch != EOF) {
             fprintf(file, "%c", ch);
             ch = fgetc(cub);
-            chC = fgetc(cubCopy);
-        }
-        fclose(cub); fclose(cubCopy);
-    }
-    fclose(file);
+        }fclose(cub); 
+    }fclose(file);
 }
 
 int main(int argc, char const *argv[]) {
