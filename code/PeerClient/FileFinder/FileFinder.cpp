@@ -18,7 +18,8 @@ string getFileInfo(int indexSocket, string &filename){
 }
 
 void requestFileChunk(FileRequestDTO<ll> fileInfo, PeerInfo peerInfo, string name) {
-    int peerSocket = PeerServer<ll>::connectToIndex(sockaddr_in6_to_string(peerInfo.ip), to_string(peerInfo.port));
+    cout<<peerInfo.ip<<endl;
+    int peerSocket = PeerServer<ll>::connectToIndex(peerInfo.ip, to_string(peerInfo.port));
     string finfo = fileInfo.serialize();
     send(peerSocket, finfo.c_str(), finfo.size(), 0);
     FILE* file = fopen(name.c_str(), "wb");
@@ -34,14 +35,14 @@ void requestFileChunk(FileRequestDTO<ll> fileInfo, PeerInfo peerInfo, string nam
     close(peerSocket);
 }
 
-void requestFile(FileInfo<ll> fileInfo) {
+void requestFile(FileInfo<ll> fileInfo, string &dir) {
     ll numPeers = fileInfo.addr.size();
     ll chunkSize = fileInfo.size / numPeers;
     ll startByte = 0, i = 0, mod = fileInfo.size % numPeers;
     vector<thread> threads;
     while (i < numPeers) {
         threads.emplace_back([&, i, startByte, chunkSize, mod]() {
-            requestFileChunk(FileRequestDTO<ll>{fileInfo.hash1, fileInfo.hash2, fileInfo.size, startByte, chunkSize + (mod > 0)}, fileInfo.addr[i], to_string(i));
+            requestFileChunk(FileRequestDTO<ll>{fileInfo.hash1, fileInfo.hash2, fileInfo.size, startByte, chunkSize + (mod > 0)}, fileInfo.addr[i], dir+"/"+to_string(i));
         });
         i++; startByte += chunkSize + (mod > 0); mod--;
     }
@@ -51,8 +52,7 @@ void requestFile(FileInfo<ll> fileInfo) {
 }
 
 void downloadFile(FileInfo<ll> fileInfo, string directory, string fileName) {
-    cout << directory << endl;
-    requestFile(fileInfo);
+    requestFile(fileInfo, directory);
     const filesystem::path sandbox{directory};
     FILE* file = fopen(fileName.c_str(), "wb");
     vector<filesystem::path> files;

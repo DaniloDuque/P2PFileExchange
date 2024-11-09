@@ -11,7 +11,7 @@ $(EXEC): $(SRC)
 	$(CC) $(CFLAGS) -o $(EXEC) $(SRC) -lm
 
 run: $(EXEC)
-	./$(EXEC) 8080 192.168.0.0 2.tcp.ngrok.io 18297 FileReader/testDirectory 
+	./$(EXEC) 8080 192.168.100.94 2.tcp.ngrok.io 11655 FileReader/testDirectory 
 
 clean:
 	rm -f $(EXEC)

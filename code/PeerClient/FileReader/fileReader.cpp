@@ -18,10 +18,8 @@ vector<PeerFileDTO<ll>>  fileDirectoryReader(int port, string &ip, string &direc
         DTO.size = filesystem::file_size(dir_entry);
         DTO.alias = name;
         PeerInfo info;
-        info.ip.sin6_family = AF_INET6;
+        info.ip = ip;
         cout<<"Indexing: "<<name<<endl;
-        inet_pton(AF_INET6, ip.c_str(), &info.ip.sin6_addr);
-        info.ip.sin6_port = htons(8080);
         info.port = port;
         DTO.info = info;
         res.push_back(DTO);
