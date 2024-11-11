@@ -19,7 +19,7 @@ string getFileInfo(int indexSocket, string &filename){
 
 void requestFileChunk(FileRequestDTO<ll> fileInfo, PeerInfo peerInfo, string name) {
     cout<<peerInfo.ip<<endl;
-    int peerSocket = PeerServer<ll>::connectToIndex(peerInfo.ip, to_string(peerInfo.port));
+    int peerSocket = PeerServer<ll>::connectToServer(peerInfo.ip, to_string(peerInfo.port));
     string finfo = fileInfo.serialize();
     send(peerSocket, finfo.c_str(), finfo.size(), 0);
     FILE* file = fopen(name.c_str(), "wb");
@@ -74,7 +74,7 @@ int main(int argc, char const *argv[]) {
         return -1;
     }
     string mainPort=argv[1], indexIp=argv[2], indexPort=argv[3], fileName=argv[4], directory=argv[5];
-    int indexSocket = PeerServer<ll>::connectToIndex(indexIp, indexPort);
+    int indexSocket = PeerServer<ll>::connectToServer(indexIp, indexPort);
     string finfo = getFileInfo(indexSocket, fileName);
     if(finfo.empty()) {cerr<<"Bad Response from index"<<endl; return -1;}
     if(finfo[0]!='0') {cerr<<"Requested file not found in the network"<<endl; return 0;}

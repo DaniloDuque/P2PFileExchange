@@ -7,34 +7,33 @@ PeerServer<T>::PeerServer(int p, string ip, string directory) : TCPServer(p, ip)
 }
 
 template<typename T>
-int PeerServer<T>::connectToIndex(string indexIp, string indexPort){
+int PeerServer<T>::connectToServer(string serverIp, string serverPort){
 
-    int indexSocket = socket(AF_INET, SOCK_STREAM, 0);
-    if (indexSocket < 0) {
+    cout<<serverIp<<' '<<serverPort<<endl;
+
+    int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+    if (serverSocket < 0) {
         cerr << "Error creating socket" << endl;
-        return -1;
-    }
-
-    struct hostent *server = gethostbyname(indexIp.c_str());
-    if (server == NULL) {
-        cerr << "Error: could not resolve server address" << endl;
-        close(indexSocket);
         return -1;
     }
 
     sockaddr_in serverAddress;
     serverAddress.sin_family = AF_INET;
-    serverAddress.sin_port = htons(stoi(indexPort));  
-    memcpy(&serverAddress.sin_addr.s_addr, server->h_addr_list[0], server->h_length);  
+    serverAddress.sin_port = htons(stoi(serverPort));
 
-    if (connect(indexSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) < 0) {
-        cerr << "Error connecting to the server" << endl;
-        close(indexSocket);
+    if (inet_pton(AF_INET, serverIp.c_str(), &serverAddress.sin_addr) <= 0) {
+        cerr << "Error: Invalid address/ Address not supported" << endl;
+        close(serverSocket);
         return -1;
     }
 
-    return indexSocket;
+    if (connect(serverSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) < 0) {
+        cerr << "Error connecting to the server" << endl;
+        close(serverSocket);
+        return -1;
+    }
 
+    return serverSocket;
 }
 
 template<typename T>

@@ -11,7 +11,7 @@ $(EXEC): $(SRC)
 	$(CC) $(CFLAGS) -o $(EXEC) $(SRC) -lm
 
 run: $(EXEC)
-	./$(EXEC) 192.168.86.25 8585
+	./$(EXEC) 8585
 
 clean:
 	rm -f $(EXEC)

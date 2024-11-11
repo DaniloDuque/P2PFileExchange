@@ -7,11 +7,10 @@ class TCPServer {
 
 protected:
     int port;
-    string ip_addr;
     virtual void handleClient(int) = 0;
 
 public:
-    TCPServer(int, string);
+    TCPServer(int);
     void run();
 };
 
