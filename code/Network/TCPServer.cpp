@@ -11,7 +11,7 @@ void TCPServer::run() {
     
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (server_fd == 0) {
-        std::cerr << "Error creating socket" << std::endl;
+        cerr << "Error creating socket" << endl;
         exit(EXIT_FAILURE);
     }
     
@@ -22,27 +22,29 @@ void TCPServer::run() {
     address.sin_port = htons(port);
 
     if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {
-        std::cerr << "Error in bind()" << std::endl;
+        cerr << "Error in bind()" << endl;
         close(server_fd);
         exit(EXIT_FAILURE);
     }
     
     if (listen(server_fd, 3) < 0) {
-        std::cerr << "Error in listen()" << std::endl;
+        cerr << "Error in listen()" << endl;
         close(server_fd);
         exit(EXIT_FAILURE);
     }
 
-    std::cout << "Server listening on port " << port << std::endl;
+    char ip_str[INET_ADDRSTRLEN];  
+    inet_ntop(AF_INET, &address.sin_addr, ip_str, INET_ADDRSTRLEN);  
+    cout << "Server on IP "<<ip_str<<" "<<"listening on port " << port << endl;
 
     while (true) {
         int new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen);
         if (new_socket < 0) {
-            std::cerr << "Error in accept()" << std::endl;
+            cerr << "Error in accept()" << endl;
             continue;
         }
 
-        std::thread(&TCPServer::handleClient, this, new_socket).detach();
+        thread(&TCPServer::handleClient, this, new_socket).detach();
     }
 }
 
