@@ -6,7 +6,7 @@
 #include <unistd.h>
 
 template<typename T>
-IndexServer<T>::IndexServer(int p) : TCPServer(p) {}
+IndexServer<T>::IndexServer(int p, string addr) : TCPServer(p, addr) {}
 
 template<typename T>
 void IndexServer<T>::addPeer(vector<PeerFileDTO<T>> peerFiles){

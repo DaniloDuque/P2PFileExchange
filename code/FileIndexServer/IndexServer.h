@@ -16,7 +16,7 @@ private:
     void handleAddPeer(string);
     void handleFindFile(string, int);
 public: 
-    IndexServer(int);
+    IndexServer(int, string);
 };
 
 #include "IndexServer.cpp"

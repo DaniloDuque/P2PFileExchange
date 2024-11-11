@@ -12,6 +12,7 @@ class PeerServer : public TCPServer {
 
 private:
 
+    string path;
     set<HashedFile<T>> HashedFiles;
     void handleClient(int) override;
     void sendFilePart(int, FileRequestDTO<T>);

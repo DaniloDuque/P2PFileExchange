@@ -11,7 +11,7 @@ $(EXEC): $(SRC)
 	$(CC) $(CFLAGS) -o $(EXEC) $(SRC) -lm
 
 run: $(EXEC)
-	./$(EXEC) 8989 192.168.86.25 192.168.86.25 8585 FileReader/testDirectory 
+	./$(EXEC) 8989 192.168.100.94 192.168.86.25 8585 FileReader/testDirectory 
 
 clean:
 	rm -f $(EXEC)
