@@ -61,6 +61,7 @@ void PeerServer<T>::sendFilePart(int peerSocket, FileRequestDTO<T> rqst){
     char buffer[BUFFER_SIZE];
     T leftBytes = rqst.chunkSize;
     while (leftBytes > 0) {
+	cout<<leftBytes<<endl;
         size_t bytesToRead = min(leftBytes, static_cast<T>(BUFFER_SIZE));
         size_t bytesRead = fread(buffer, 1, bytesToRead, file);
         if (bytesRead > 0) {
@@ -71,5 +72,6 @@ void PeerServer<T>::sendFilePart(int peerSocket, FileRequestDTO<T> rqst){
             break;
         }
         receiveAcknowledge(peerSocket);
-    }fclose(file); 
+    }
+    fclose(file); 
 }

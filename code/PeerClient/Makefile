@@ -11,7 +11,7 @@ $(EXEC): $(SRC)
 	$(CC) $(CFLAGS) -o $(EXEC) $(SRC) -lm
 
 run: $(EXEC)
-	./$(EXEC) 8989 192.168.100.94 192.168.86.21 8585 ../../shared/Peer1 
+	./$(EXEC) 8989 192.168.86.21 192.168.100.94 8585 ../../shared/Peer1 
 
 clean:
 	rm -f $(EXEC)
