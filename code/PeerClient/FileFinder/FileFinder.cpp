@@ -18,7 +18,6 @@ string getFileInfo(int indexSocket, string &filename){
 }
 
 void requestFileChunk(FileRequestDTO<ll> fileInfo, PeerInfo peerInfo, string name) {
-    cout<<peerInfo.ip<<endl;
     int peerSocket = PeerServer<ll>::connectToServer(peerInfo.ip, to_string(peerInfo.port));
     string finfo = fileInfo.serialize();
     send(peerSocket, finfo.c_str(), finfo.size(), 0);
@@ -27,6 +26,7 @@ void requestFileChunk(FileRequestDTO<ll> fileInfo, PeerInfo peerInfo, string nam
     while (leftBytes > 0) {
         size_t bytesToReceive = min(leftBytes, static_cast<ll>(BUFFER_SIZE));
         string buffer = readBuffer(peerSocket, bytesToReceive);
+        sendAcknowledge(peerSocket);
         if(buffer.empty()) {cerr << "Error receiving data from socket." << endl; return;}
         fwrite(buffer.c_str(), 1, buffer.size(), file);
         leftBytes -= buffer.size();

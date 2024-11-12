@@ -51,6 +51,10 @@ void sendAcknowledge(int socket){
     send(socket, ack.c_str(), ack.size(), 0);
 }
 
+void receiveAcknowledge(int socket){
+    readBuffer(socket, 1);
+}
+
 string toLower(string s){
     transform(s.begin(), s.end(), s.begin(), [](unsigned char c){ return tolower(c);});
     return s;
