@@ -38,10 +38,10 @@ def start_peer_server():
     except Exception as e:
         app.after(100, lambda: messagebox.showerror("Error", f"Could not execute RunPeer.cpp: {str(e)}"))
 
-def search_file(port, indexIp, indexPort, filename, dir="saved"):
+def search_file(port, indexIp, indexPort, filename, dir="../PeerClient/FileFinder/saved"):
     try:
         process = subprocess.Popen(
-            ['../PeerClient/FileFinder/a.out', port, indexIp, indexPort, filename, dir],
+            ['../PeerClient/FileFinder/a.out', str(8989), indexIp, indexPort, filename, dir],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
         )
