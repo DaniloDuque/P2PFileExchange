@@ -1,7 +1,7 @@
 #include "PeerServer.h"
 
 template<typename T>
-PeerServer<T>::PeerServer(int p, string ip, string directory) : TCPServer(p, ip), path(directory) {
+PeerServer<T>::PeerServer(int p, string ip, string directory) : TCPServer(p), path(directory) {
     vector<PeerFileDTO<T>> list = fileDirectoryReader(p, ip, directory);
     for(auto &pf : list) HashedFiles.emplace(pf.h1, pf.h2, pf.size, pf.alias);
 }

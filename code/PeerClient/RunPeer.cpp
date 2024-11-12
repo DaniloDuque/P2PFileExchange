@@ -8,11 +8,10 @@ int main(int argc, char const *argv[]) {
         return -1;
     }
     string port=argv[1], ip=argv[2], indexIp=argv[3], indexPort=argv[4], directory=argv[5];
-    addPeer(port, ip, indexIp, indexPort, directory);
-    //thread tadd(&addPeer, ref(port), ref(ip), ref(indexIp), ref(indexPort), ref(directory));
-    //PeerServer<ll> server(stoi(port), ip, directory);
-    //thread tserver(&PeerServer<ll>::run, &server);
+    thread tadd(&addPeer, ref(port), ref(ip), ref(indexIp), ref(indexPort), ref(directory));
+    PeerServer<ll> server(stoi(port), ip, directory);
+    thread tserver(&PeerServer<ll>::run, &server);
     //thread tui(&listenUser, ref(indexIp), ref(indexPort)); // TODO: make user interface a thread
-    //tadd.join(); //tserver.join(); //tui.join(); 
+    tadd.join(); tserver.join(); //tui.join(); 
     return 0;
 }
