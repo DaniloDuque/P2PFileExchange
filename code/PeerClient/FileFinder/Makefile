@@ -11,7 +11,7 @@ $(EXEC): $(SRC)
 	$(CC) $(CFLAGS) -o $(EXEC) $(SRC) -lm
 
 run: $(EXEC)
-	./$(EXEC) 8484 192.168.100.94 8585 index.html saved 
+	./$(EXEC) 8484 192.168.86.21 8585 first saved 
 
 clean:
 	rm -f $(EXEC)

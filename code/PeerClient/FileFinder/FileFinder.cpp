@@ -58,14 +58,22 @@ void downloadFile(FileInfo<ll> fileInfo, string directory, string fileName) {
     vector<filesystem::path> files;
     for (auto& dirEntry : filesystem::directory_iterator{sandbox}) files.push_back(dirEntry.path());
     sort(files.begin(), files.end());
-    for (const auto& filePath : files) {
-        FILE* cub = fopen(filePath.c_str(), "rb");
+    for(auto const & dirEntry : std::filesystem::directory_iterator{sandbox}) {
+        FILE * cub = fopen(dirEntry.path().c_str(), "rb");
+        FILE * cubCopy = fopen(dirEntry.path().c_str(), "rb");
+        char chC = fgetc(cubCopy);
+        chC = fgetc(cubCopy);
         char ch = fgetc(cub);
-        while (ch != EOF) {
+        while(chC != EOF) {
+
             fprintf(file, "%c", ch);
             ch = fgetc(cub);
-        }fclose(cub); 
-    }fclose(file);
+            chC = fgetc(cubCopy);
+        }
+        fclose(cub);
+        fclose(cubCopy);
+    }
+    fclose(file);
 }
 
 int main(int argc, char const *argv[]) {
