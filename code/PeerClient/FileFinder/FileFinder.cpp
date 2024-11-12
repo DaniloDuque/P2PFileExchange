@@ -20,12 +20,14 @@ void requestFileChunk(FileRequestDTO<ll> fileInfo, PeerInfo peerInfo, std::strin
     int peerSocket = PeerServer<ll>::connectToServer(peerInfo.ip, std::to_string(peerInfo.port));
     std::string finfo = fileInfo.serialize();
     sendBytes(peerSocket, finfo);
+
     FILE* file = fopen(name.c_str(), "wb");
     if (!file) {
         std::cerr << "Error opening file: " << name << std::endl;
         close(peerSocket);
         return;
     }
+
     ll bytesRead = 0;
     char buffer[BUFFER_SIZE];  
     while (bytesRead < fileInfo.chunkSize) {
@@ -38,19 +40,17 @@ void requestFileChunk(FileRequestDTO<ll> fileInfo, PeerInfo peerInfo, std::strin
             close(peerSocket);
             return;
         }
+
         if (bytesReceived == 0) {
             std::cerr << "Connection closed by peer." << std::endl;
             break;
         }
-        size_t bytesWritten = fwrite(buffer, 1, bytesReceived, file);
-        if (bytesWritten != bytesReceived) {
-            std::cerr << "Error writing to file." << std::endl;
-            fclose(file);
-            close(peerSocket);
-            return;
-        }
+        fwrite(buffer, 1, bytesReceived, file);
+        std::string ack = "ACK";
+        sendBytes(peerSocket, ack);
         bytesRead += bytesReceived;
-    }fclose(file);
+    }
+    fclose(file);
     close(peerSocket);
 }
 
