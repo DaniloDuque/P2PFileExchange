@@ -16,20 +16,40 @@ string getFileInfo(int indexSocket, string &filename){
     return info;
 }
 
-void requestFileChunk(FileRequestDTO<ll> fileInfo, PeerInfo peerInfo, string name) {
-    int peerSocket = PeerServer<ll>::connectToServer(peerInfo.ip, to_string(peerInfo.port));
-    string finfo = fileInfo.serialize();
+void requestFileChunk(FileRequestDTO<ll> fileInfo, PeerInfo peerInfo, std::string name) {
+    int peerSocket = PeerServer<ll>::connectToServer(peerInfo.ip, std::to_string(peerInfo.port));
+    std::string finfo = fileInfo.serialize();
     sendBytes(peerSocket, finfo);
     FILE* file = fopen(name.c_str(), "wb");
+    if (!file) {
+        std::cerr << "Error opening file: " << name << std::endl;
+        close(peerSocket);
+        return;
+    }
     ll bytesRead = 0;
+    char buffer[BUFFER_SIZE];  
     while (bytesRead < fileInfo.chunkSize) {
-	    cout<<bytesRead<<endl;
-        size_t bytesToReceive = min(fileInfo.chunkSize-bytesRead, static_cast<ll>(BUFFER_SIZE));
-        string buffer = readBytes(peerSocket, bytesToReceive);
-        sendAcknowledge(peerSocket);
-    	bytesRead+=buffer.size();
-        if(buffer.empty()) {cerr << "Error receiving data from socket." << endl; return;}
-        fwrite(buffer.c_str(), 1, buffer.size(), file);
+        std::cout << "Bytes read: " << bytesRead << std::endl;
+        size_t bytesToReceive = std::min(fileInfo.chunkSize - bytesRead, static_cast<ll>(BUFFER_SIZE));
+        ssize_t bytesReceived = read(peerSocket, buffer, bytesToReceive);
+        if (bytesReceived < 0) {
+            std::cerr << "Error receiving data from socket: " << strerror(errno) << std::endl;
+            fclose(file);
+            close(peerSocket);
+            return;
+        }
+        if (bytesReceived == 0) {
+            std::cerr << "Connection closed by peer." << std::endl;
+            break;
+        }
+        size_t bytesWritten = fwrite(buffer, 1, bytesReceived, file);
+        if (bytesWritten != bytesReceived) {
+            std::cerr << "Error writing to file." << std::endl;
+            fclose(file);
+            close(peerSocket);
+            return;
+        }
+        bytesRead += bytesReceived;
     }fclose(file);
     close(peerSocket);
 }
