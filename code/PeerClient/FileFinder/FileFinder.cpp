@@ -24,15 +24,13 @@ void requestFileChunk(FileRequestDTO<ll> fileInfo, PeerInfo peerInfo, string nam
     FILE* file = fopen(name.c_str(), "wb");
     ll bytesRead = 0;
     while (bytesRead < fileInfo.chunkSize) {
-	cout<<bytesRead<<endl;
+	    cout<<bytesRead<<endl;
         size_t bytesToReceive = min(fileInfo.chunkSize-bytesRead, static_cast<ll>(BUFFER_SIZE));
         string buffer = readBuffer(peerSocket, bytesToReceive);
-	bytesRead+=buffer.size();
-        if(!(bytesRead%BUFFER_SIZE) || bytesRead == fileInfo.chunkSize) sendAcknowledge(peerSocket);
+    	bytesRead+=buffer.size();
         if(buffer.empty()) {cerr << "Error receiving data from socket." << endl; return;}
         fwrite(buffer.c_str(), 1, buffer.size(), file);
     }fclose(file);
-    sendAcknowledge(peerSocket);
     close(peerSocket);
 }
 

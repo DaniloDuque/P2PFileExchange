@@ -71,7 +71,6 @@ void PeerServer<T>::sendFilePart(int peerSocket, FileRequestDTO<T> rqst){
             cerr << "End of file reached." << endl;
             break;
         }
-        receiveAcknowledge(peerSocket);
     }
     fclose(file); 
 }

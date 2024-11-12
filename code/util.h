@@ -25,7 +25,7 @@
 #include <set>
 #include <mutex>
 
-#define BUFFER_SIZE (1<<13)
+#define BUFFER_SIZE (1<<10)
 #define ll long long
 #define uchar unsigned char
 
@@ -39,10 +39,21 @@ string sockaddr_in6_to_string(const sockaddr_in6& addr) {
     return string(str); 
 }
 
-string readBuffer(int socket, int bufferSize){
-    char buffer[bufferSize] = {};
-    read(socket, buffer, bufferSize);
-    string info = buffer;
+string readBuffer(int socket, int bufferSize) {
+    string info;
+    info.resize(bufferSize);  
+    ll totalBytesRead = 0;
+    while (totalBytesRead < bufferSize) {
+        ssize_t bytesRead = read(socket, &info[totalBytesRead], bufferSize - totalBytesRead);
+        
+        if (bytesRead < 0) {
+            cerr << "Error in readBuffer: " << strerror(errno) << endl;
+            return "";  
+        }
+        if (bytesRead == 0) break;
+        totalBytesRead += bytesRead;
+    }
+    info.resize(totalBytesRead);
     return info;
 }
 
