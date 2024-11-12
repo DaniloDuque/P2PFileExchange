@@ -72,8 +72,10 @@ void downloadFile(FileInfo<ll> fileInfo, string directory, string fileName) {
         }
         fclose(cub);
         fclose(cubCopy);
+    }fclose(file);
+    for (auto& filePath : files) {
+        if (filePath.filename() != "0") filesystem::remove(filePath);
     }
-    fclose(file);
 }
 
 int main(int argc, char const *argv[]) {
