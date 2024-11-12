@@ -26,6 +26,7 @@ void requestFileChunk(FileRequestDTO<ll> fileInfo, PeerInfo peerInfo, string nam
 	    cout<<bytesRead<<endl;
         size_t bytesToReceive = min(fileInfo.chunkSize-bytesRead, static_cast<ll>(BUFFER_SIZE));
         string buffer = readBytes(peerSocket, bytesToReceive);
+        sendAcknowledge(peerSocket);
     	bytesRead+=buffer.size();
         if(buffer.empty()) {cerr << "Error receiving data from socket." << endl; return;}
         fwrite(buffer.c_str(), 1, buffer.size(), file);

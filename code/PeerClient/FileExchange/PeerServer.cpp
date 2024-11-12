@@ -67,6 +67,7 @@ void PeerServer<T>::sendFilePart(int peerSocket, FileRequestDTO<T> rqst){
         if (bytesRead > 0) {
             string data = buffer;
             sendBytes(peerSocket, data);
+            receiveAcknowledge(peerSocket);
             leftBytes -= bytesRead;
         } else {
             cerr << "End of file reached." << endl;
