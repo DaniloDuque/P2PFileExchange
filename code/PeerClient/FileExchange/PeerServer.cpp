@@ -70,7 +70,7 @@ void PeerServer<T>::sendFilePart(int peerSocket, FileRequestDTO<T> rqst) {
             std::string data(buffer, bytesRead);
             sendBytes(peerSocket, data);
             leftBytes -= bytesRead;
-            std::string ack = readBytes(peerSocket, 3); 
+            string ack = readBytes(peerSocket, 3); 
             if (ack != "ACK") {
                 std::cerr << "Error receiving ACK from client." << std::endl;
                 break;
@@ -79,6 +79,5 @@ void PeerServer<T>::sendFilePart(int peerSocket, FileRequestDTO<T> rqst) {
             std::cerr << "Error reading from file or end of file." << std::endl;
             break;
         }
-    }
-    fclose(file);
+    }fclose(file);
 }
