@@ -10,9 +10,8 @@ string getFileInfo(int indexSocket, string &filename){
         return "";
     }
     puts("File info requested!");
-    string info = readBuffer(indexSocket, BUFFER_SIZE);
-    package = "0";
-    send(indexSocket, package.c_str(), package.size(), 0);
+    string info = readSingleBuffer(indexSocket);
+    sendAcknowledge(indexSocket);
     close(indexSocket);
     return info;
 }
@@ -20,13 +19,13 @@ string getFileInfo(int indexSocket, string &filename){
 void requestFileChunk(FileRequestDTO<ll> fileInfo, PeerInfo peerInfo, string name) {
     int peerSocket = PeerServer<ll>::connectToServer(peerInfo.ip, to_string(peerInfo.port));
     string finfo = fileInfo.serialize();
-    send(peerSocket, finfo.c_str(), finfo.size(), 0);
+    sendBytes(peerSocket, finfo);
     FILE* file = fopen(name.c_str(), "wb");
     ll bytesRead = 0;
     while (bytesRead < fileInfo.chunkSize) {
 	    cout<<bytesRead<<endl;
         size_t bytesToReceive = min(fileInfo.chunkSize-bytesRead, static_cast<ll>(BUFFER_SIZE));
-        string buffer = readBuffer(peerSocket, bytesToReceive);
+        string buffer = readBytes(peerSocket, bytesToReceive);
     	bytesRead+=buffer.size();
         if(buffer.empty()) {cerr << "Error receiving data from socket." << endl; return;}
         fwrite(buffer.c_str(), 1, buffer.size(), file);
@@ -64,13 +63,11 @@ void downloadFile(FileInfo<ll> fileInfo, string directory, string fileName) {
         chC = fgetc(cubCopy);
         char ch = fgetc(cub);
         while(chC != EOF) {
-
             fprintf(file, "%c", ch);
             ch = fgetc(cub);
             chC = fgetc(cubCopy);
         }
-        fclose(cub);
-        fclose(cubCopy);
+        fclose(cub); fclose(cubCopy);
     }fclose(file);
     for (auto& filePath : files) {
         if (filePath.filename() != "0") filesystem::remove(filePath);

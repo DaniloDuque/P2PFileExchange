@@ -46,9 +46,9 @@ string PeerServer<T>::searchFile(FileRequestDTO<T> dto){
 template<typename T>
 void PeerServer<T>::handleClient(int peerSocket) {
     cerr <<"Hello from peer server" << endl;
-    string rqst = readBuffer(peerSocket, BUFFER_SIZE);
+    string rqst = readSingleBuffer(peerSocket);
     if(rqst.size()) sendFilePart(peerSocket, FileRequestDTO<T>::deserialize(rqst));
-    readBuffer(peerSocket, 1); 
+    receiveAcknowledge(peerSocket); 
     close(peerSocket); 
 }
 
@@ -58,14 +58,15 @@ void PeerServer<T>::sendFilePart(int peerSocket, FileRequestDTO<T> rqst){
     FILE* file = fopen(filePath.c_str(), "rb");
     cout<<rqst.startByte<<' '<<rqst.chunkSize<<endl;
     fseek(file, rqst.startByte, SEEK_SET);
-    char buffer[BUFFER_SIZE];
+    char buffer[BUFFER_SIZE] = {};
     T leftBytes = rqst.chunkSize;
     while (leftBytes > 0) {
 	cout<<leftBytes<<endl;
         size_t bytesToRead = min(leftBytes, static_cast<T>(BUFFER_SIZE));
         size_t bytesRead = fread(buffer, 1, bytesToRead, file);
         if (bytesRead > 0) {
-            send(peerSocket, buffer, bytesRead, 0); 
+            string data = buffer;
+            sendBytes(peerSocket, data);
             leftBytes -= bytesRead;
         } else {
             cerr << "End of file reached." << endl;

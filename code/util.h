@@ -39,13 +39,19 @@ string sockaddr_in6_to_string(const sockaddr_in6& addr) {
     return string(str); 
 }
 
-string readBuffer(int socket, int bufferSize) {
+string readSingleBuffer(int socket){
+    char buffer[BUFFER_SIZE] = {};
+    read(socket, buffer, BUFFER_SIZE);
+    string info = buffer;
+    return info;
+}
+
+string readBytes(int socket, int bufferSize) {
     string info;
     info.resize(bufferSize);  
     ll totalBytesRead = 0;
     while (totalBytesRead < bufferSize) {
         ssize_t bytesRead = read(socket, &info[totalBytesRead], bufferSize - totalBytesRead);
-        
         if (bytesRead < 0) {
             cerr << "Error in readBuffer: " << strerror(errno) << endl;
             return "";  
@@ -57,13 +63,27 @@ string readBuffer(int socket, int bufferSize) {
     return info;
 }
 
+void sendBytes(int socket, string& buffer) {
+    ll totalBytesSent = 0;
+    ll bufferSize = buffer.size();
+    while (totalBytesSent < bufferSize) {
+        ssize_t bytesToSend = std::min(bufferSize - totalBytesSent, static_cast<ll>(BUFFER_SIZE));
+        ssize_t bytesSent = write(socket, &buffer[totalBytesSent], bytesToSend);
+        if (bytesSent < 0) {
+            std::cerr << "Error in sendBytes: " << strerror(errno) << std::endl;
+            return;  
+        }
+        totalBytesSent += bytesSent;
+    }
+}
+
 void sendAcknowledge(int socket){
     string ack = "0";
     send(socket, ack.c_str(), ack.size(), 0);
 }
 
-void receiveAcknowledge(int socket){
-    readBuffer(socket, 1);
+string receiveAcknowledge(int socket){
+    return readBytes(socket, 1);
 }
 
 string toLower(string s){

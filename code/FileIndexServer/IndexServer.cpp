@@ -25,10 +25,8 @@ void IndexServer<T>::handleFindFile(string fileName, int client_socket){
     string rsp;
     if(file == nullptr) rsp = "1";
     else rsp = "0 " + file->serialize(); 
-    send(client_socket, rsp.c_str(), rsp.size(), 0);
-    char ack[1] = {};
-    read(client_socket, ack, sizeof(char));
-    string rslt = ack;
+    sendBytes(client_socket, rsp);
+    string rslt = receiveAcknowledge(client_socket);
     cout<<"Received acknowledge! "<<rslt<<endl;
 }
 
@@ -46,9 +44,7 @@ void IndexServer<T>::handleAddPeer(string rqst){
 template<typename T>
 void IndexServer<T>::handleClient(int client_socket) {
     puts("Request received!");
-    char buffer[BUFFER_SIZE] = {};
-    read(client_socket, buffer, BUFFER_SIZE);
-    string rqst = toLower(buffer);
+    string rqst = toLower(readSingleBuffer(client_socket));
     if(rqst.empty()) return;
     if(rqst[0]=='1') handleAddPeer(rqst.substr(2, rqst.size()));
     if(rqst[0]=='2') handleFindFile(rqst.substr(2, rqst.size()), client_socket);
