@@ -16,29 +16,29 @@ string getFileInfo(int indexSocket, string &filename){
     return info;
 }
 
-void requestFileChunk(FileRequestDTO<ll> fileInfo, PeerInfo peerInfo, std::string name) {
-    int peerSocket = PeerServer<ll>::connectToServer(peerInfo.ip, std::to_string(peerInfo.port));
-    std::string finfo = fileInfo.serialize();
+void requestFileChunk(FileRequestDTO<ll> fileInfo, PeerInfo peerInfo, string name) {
+    int peerSocket = PeerServer<ll>::connectToServer(peerInfo.ip, to_string(peerInfo.port));
+    string finfo = fileInfo.serialize();
     sendBytes(peerSocket, finfo);
     FILE* file = fopen(name.c_str(), "wb");
     ll bytesRead = 0;
     char buffer[BUFFER_SIZE];  
     while (bytesRead < fileInfo.chunkSize) {
-        std::cout << "Bytes read: " << bytesRead << std::endl;
-        size_t bytesToReceive = std::min(fileInfo.chunkSize - bytesRead, static_cast<ll>(BUFFER_SIZE));
+        cout << "Bytes read: " << bytesRead << endl;
+        size_t bytesToReceive = min(fileInfo.chunkSize - bytesRead, static_cast<ll>(BUFFER_SIZE));
         ssize_t bytesReceived = read(peerSocket, buffer, bytesToReceive);
         if (bytesReceived < 0) {
-            std::cerr << "Error receiving data from socket: " << strerror(errno) << std::endl;
+            cerr << "Error receiving data from socket: " << strerror(errno) << endl;
             fclose(file);
             close(peerSocket);
             return;
         }
         if (bytesReceived == 0) {
-            std::cerr << "Connection closed by peer." << std::endl;
+            cerr << "Connection closed by peer." << endl;
             break;
         }
         fwrite(buffer, 1, bytesReceived, file);
-        std::string ack = "ACK";
+        string ack = "ACK";
         sendBytes(peerSocket, ack);
         bytesRead += bytesReceived;
     }
@@ -68,20 +68,22 @@ void downloadFile(FileInfo<ll> fileInfo, string directory, string fileName) {
     vector<filesystem::path> files;
     for (auto& dirEntry : filesystem::directory_iterator{sandbox}) files.push_back(dirEntry.path());
     sort(files.begin(), files.end());
-    for(auto const & dirEntry : std::filesystem::directory_iterator{sandbox}) {
-        FILE * cub = fopen(dirEntry.path().c_str(), "rb");
-        FILE * cubCopy = fopen(dirEntry.path().c_str(), "rb");
-        char chC = fgetc(cubCopy);
-        chC = fgetc(cubCopy);
-        char ch = fgetc(cub);
-        while(chC != EOF) {
-            fprintf(file, "%c", ch);
-            ch = fgetc(cub);
-            chC = fgetc(cubCopy);
+    for (const auto& filePath : files) {
+        FILE* cub = fopen(filePath.c_str(), "rb");
+        if (!cub) {
+            cerr << "Error opening chunk file: " << filePath << endl;
+            fclose(file);
+            return;
         }
-        fclose(cub); fclose(cubCopy);
-    }fclose(file);
-    for (auto& filePath : files) {
+        char buffer[BUFFER_SIZE];
+        size_t bytesRead;
+        while ((bytesRead = fread(buffer, 1, sizeof(buffer), cub)) > 0) {
+            fwrite(buffer, 1, bytesRead, file);
+        }
+        fclose(cub);
+    }
+    fclose(file);
+    for (const auto& filePath : files) {
         if (filePath.filename() != "0") filesystem::remove(filePath);
     }
 }
