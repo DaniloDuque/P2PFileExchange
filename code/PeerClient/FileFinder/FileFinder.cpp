@@ -2,7 +2,7 @@
 #include "../FileExchange/PeerServer.h"
 #include "FileInfo.h"
 
-string getFileInfo(int indexSocket, string &filename){
+string getMatches(int indexSocket, string &filename){
     string package = "2 " + filename;
     if (send(indexSocket, package.c_str(), package.size(), 0) < 0) {
         cerr << "Error sending the package" << endl;
@@ -12,8 +12,24 @@ string getFileInfo(int indexSocket, string &filename){
     puts("File info requested!");
     string info = readSingleBuffer(indexSocket);
     sendAcknowledge(indexSocket);
-    close(indexSocket);
     return info;
+}
+
+string requestChosenFileInfo(int indexSocket, string &filename){
+    string input;
+    cout<<getMatches(indexSocket, filename)<<endl;
+    cin>>input;
+    input = "3 " + input;
+    if (send(indexSocket, package.c_str(), package.size(), 0) < 0) {
+        cerr << "Error sending the package" << endl;
+        close(indexSocket);
+        return "";
+    }
+    puts("File chosen and peer info requested!");
+    string peersInfo = readSingleBuffer(indexSocket);
+    sendAcknowledge(indexSocket);
+    close(indexSocket);
+    return peersInfo;
 }
 
 void requestFileChunk(FileRequestDTO<ll> fileInfo, PeerInfo peerInfo, string name) {
@@ -95,7 +111,7 @@ int main(int argc, char const *argv[]) {
     }
     string mainPort=argv[1], indexIp=argv[2], indexPort=argv[3], fileName=argv[4], directory=argv[5];
     int indexSocket = PeerServer<ll>::connectToServer(indexIp, indexPort);
-    string finfo = getFileInfo(indexSocket, fileName);
+    string finfo = requestChosenFileInfo(indexSocket, fileName);
     if(finfo.empty()) {cerr<<"Bad Response from index"<<endl; return -1;}
     if(finfo[0]!='0') {cerr<<"Requested file not found in the network"<<endl; return 0;}
     FileInfo<ll> info = FileInfo<ll>::deserialize(finfo.substr(1, finfo.size()));

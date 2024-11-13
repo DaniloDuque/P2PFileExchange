@@ -14,20 +14,30 @@ void IndexServer<T>::addPeer(vector<PeerFileDTO<T>> peerFiles){
 }
 
 template<typename T>
-FileInfo<T>* IndexServer<T>::findFile(string alias){
+vector<FileInfo<T>*> IndexServer<T>::findFiles(string alias){
     return index.find(alias);
 }
-
+//
+// template<typename T>
+// string IndexServer<T>::sendMatches(vector<FileInfo<T>*> &matches, string &filename, int client_socket){
+//     cout<<"Found "<<matches.size()<<" matches for "<<filename<<" in the network"<<endl;
+//     if(matches.empty()) return "1";
+//     string rsp = "0 ";
+//     for(auto &f : matches){
+//         rsp += f.
+//     }
+//     
+// }
+//
 template<typename T>
 void IndexServer<T>::handleFindFile(string fileName, int client_socket){
-    cout<<"Searching for "<<fileName<<" in the network"<<endl;
-    FileInfo<T>* file = findFile(fileName);
+    vector<FileInfo<T>*> files = findFiles(fileName);
     string rsp;
-    if(file == nullptr) rsp = "1";
-    else rsp = "0 " + file->serialize(); 
+    if(files.empty()) rsp = "1";
+    rsp = "0 ";
+    for(auto &f : files) rsp += f->serialize(); 
     sendBytes(client_socket, rsp);
     string rslt = receiveAcknowledge(client_socket);
-    cout<<"Received acknowledge! "<<rslt<<endl;
 }
 
 template<typename T>
