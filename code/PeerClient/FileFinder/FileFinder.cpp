@@ -2,8 +2,6 @@
 #include "../FileExchange/PeerServer.h"
 #include "FileInfo.h"
 
-mutex mtx;
-
 string getFileInfo(int indexSocket, string &filename){
     string package = "2 " + filename;
     if (send(indexSocket, package.c_str(), package.size(), 0) < 0) {
@@ -28,9 +26,7 @@ void requestFileChunk(FileRequestDTO<ll> fileInfo, PeerInfo peerInfo, string nam
     while (bytesRead < fileInfo.chunkSize) {
         cout << "Bytes read: " << bytesRead << endl;
         size_t bytesToReceive = min(fileInfo.chunkSize - bytesRead, static_cast<ll>(BUFFER_SIZE));
-        mtx.lock();
         ssize_t bytesReceived = read(peerSocket, buffer, bytesToReceive);
-        mtx.unlock();
         if (bytesReceived < 0) {
             cerr << "Error receiving data from socket: " << strerror(errno) << endl;
             fclose(file);
