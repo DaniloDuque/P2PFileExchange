@@ -9,7 +9,7 @@ PeerServer<T>::PeerServer(int p, string &directory) : TCPServer(p), path(directo
 template<typename T>
 int PeerServer<T>::connectToServer(string serverIp, string serverPort){
 
-    cout<<"Connecting to server at: "<<serverIp<<" (Port: "<<serverPort<<" )"<<endl;
+    cout<<"Connecting to server at: "<<serverIp<<" (Port: "<<serverPort<<")"<<endl;
 
     int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
     if (serverSocket < 0) {
