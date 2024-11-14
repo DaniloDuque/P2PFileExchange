@@ -6,11 +6,11 @@
 template<typename T>
 struct FileRequestDTO {
 
-    T h1, h2, size;
+    T hash1, hash2, size;
     T startByte, chunkSize;
 
     string serialize() const {
-        return to_string(h1) + ',' + to_string(h2) + ',' + to_string(size) + ',' + 
+        return to_string(hash1) + ',' + to_string(hash2) + ',' + to_string(size) + ',' + 
                to_string(startByte) + ',' + to_string(chunkSize); 
     }
 
@@ -19,9 +19,9 @@ struct FileRequestDTO {
         istringstream ss(data);
         string token;
         getline(ss, token, ',');
-        dto.h1 = static_cast<T>(stoll(token));  
+        dto.hash1 = static_cast<T>(stoll(token));  
         getline(ss, token, ',');
-        dto.h2 = static_cast<T>(stoll(token));
+        dto.hash2 = static_cast<T>(stoll(token));
         getline(ss, token, ',');
         dto.size = static_cast<T>(stoll(token));
         getline(ss, token, ',');

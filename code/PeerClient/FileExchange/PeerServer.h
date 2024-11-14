@@ -4,7 +4,6 @@
 #include "../../util.h"
 #include "../../Network/TCPServer.h"
 #include "FileRequestDTO.h"
-#include "HashedFile.h"
 #include "../FileReader/fileReader.cpp"
 
 template<typename T>
@@ -13,7 +12,7 @@ class PeerServer : public TCPServer {
 private:
 
     string path;
-    set<HashedFile<T>> HashedFiles;
+    set<File<T>> sharedFiles;
     void handleClient(int) override;
     void sendFilePart(int, FileRequestDTO<T>);
     string searchFile(FileRequestDTO<T>);
@@ -21,7 +20,7 @@ private:
 public:
 
     static int connectToServer(string, string);
-    PeerServer(int, string, string);
+    PeerServer(int, string&);
 
 };
 

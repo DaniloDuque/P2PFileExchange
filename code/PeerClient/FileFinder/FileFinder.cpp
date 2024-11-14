@@ -2,8 +2,8 @@
 #include "../FileExchange/PeerServer.h"
 #include "FileInfo.h"
 
-string getFileInfo(int indexSocket, string &filename){
-    string package = "2 " + filename;
+string requestChosenFile(int indexSocket, string &fileName){
+    string package = "2 " + fileName;
     if (send(indexSocket, package.c_str(), package.size(), 0) < 0) {
         cerr << "Error sending the package" << endl;
         close(indexSocket);
@@ -11,12 +11,26 @@ string getFileInfo(int indexSocket, string &filename){
     }
     puts("File info requested!");
     string info = readSingleBuffer(indexSocket);
+    if(info=="1") return "1";
+    cout<<info<<endl;
+    string name;
+    ll size;
+    cin>>name>>size;
+    string rsp = name + ' ' + to_string(size);
+    sendBytes(indexSocket, rsp);
+    string rslt = readSingleBuffer(indexSocket);
+    if(rslt.empty() || rslt == "1") return "1";
     sendAcknowledge(indexSocket);
+    return rslt;
+}
+
+string getFileInfo(int indexSocket, string &fileName){
+    string info = requestChosenFile(indexSocket, fileName);
     close(indexSocket);
     return info;
 }
 
-void requestFileChunk(FileRequestDTO<ll> fileInfo, PeerInfo peerInfo, string name) {
+void requestFileChunk(FileRequestDTO<ll> fileInfo, PeerFileInfo peerInfo, string name) {
     int peerSocket = PeerServer<ll>::connectToServer(peerInfo.ip, to_string(peerInfo.port));
     string finfo = fileInfo.serialize();
     sendBytes(peerSocket, finfo);
@@ -46,13 +60,13 @@ void requestFileChunk(FileRequestDTO<ll> fileInfo, PeerInfo peerInfo, string nam
 }
 
 void requestFile(FileInfo<ll> fileInfo, string &dir) {
-    ll numPeers = fileInfo.addr.size();
-    ll chunkSize = fileInfo.size / numPeers;
-    ll startByte = 0, i = 0, mod = fileInfo.size % numPeers;
+    ll numPeers = fileInfo.getNumberOfPeersWithFile();
+    ll chunkSize = fileInfo.getSize() / numPeers;
+    ll startByte = 0, i = 0, mod = fileInfo.getSize() % numPeers;
     vector<thread> threads;
-    while (i < numPeers) {
+    for(auto &pfi : fileInfo.getFileInfo()){
         threads.emplace_back([&, i, startByte, chunkSize, mod]() {
-            requestFileChunk(FileRequestDTO<ll>{fileInfo.hash1, fileInfo.hash2, fileInfo.size, startByte, chunkSize + (mod > 0)}, fileInfo.addr[i], dir+"/"+to_string(i));
+            requestFileChunk(FileRequestDTO<ll>{fileInfo.getHash1(), fileInfo.getHash2(), fileInfo.getSize(), startByte, chunkSize + (mod > 0)}, pfi, dir+"/"+to_string(i));
         });
         i++; startByte += chunkSize + (mod > 0); mod--;
     }
@@ -98,7 +112,7 @@ int main(int argc, char const *argv[]) {
     string finfo = getFileInfo(indexSocket, fileName);
     if(finfo.empty()) {cerr<<"Bad Response from index"<<endl; return -1;}
     if(finfo[0]!='0') {cerr<<"Requested file not found in the network"<<endl; return 0;}
-    FileInfo<ll> info = FileInfo<ll>::deserialize(finfo.substr(1, finfo.size()));
+    FileInfo<ll> info = FileInfo<ll>::deserialize(finfo.substr(2, finfo.size()));
     downloadFile(info, directory, fileName);
     return 0;
 }

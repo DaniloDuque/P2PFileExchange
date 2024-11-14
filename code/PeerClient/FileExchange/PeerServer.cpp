@@ -1,9 +1,9 @@
 #include "PeerServer.h"
 
 template<typename T>
-PeerServer<T>::PeerServer(int p, string ip, string directory) : TCPServer(p), path(directory) {
-    vector<PeerFileDTO<T>> list = fileDirectoryReader(p, ip, directory);
-    for(auto &pf : list) HashedFiles.emplace(pf.h1, pf.h2, pf.size, pf.alias);
+PeerServer<T>::PeerServer(int p, string &directory) : TCPServer(p), path(directory) {
+    vector<File<T>> list = fileDirectoryReader<T>(directory);
+    for(auto &pf : list) sharedFiles.emplace(pf.hash1, pf.hash2, pf.size, pf.fileName);
 }
 
 template<typename T>
@@ -38,9 +38,9 @@ int PeerServer<T>::connectToServer(string serverIp, string serverPort){
 
 template<typename T>
 string PeerServer<T>::searchFile(FileRequestDTO<T> dto){
-    auto it = HashedFiles.find(HashedFile<T>{dto.h1, dto.h2, dto.size, ""});
-    if(it == HashedFiles.end()) return "";  
-    return it->alias;  
+    auto it = sharedFiles.find(File<T>{dto.hash1, dto.hash2, dto.size, ""});
+    if(it == sharedFiles.end()) return "";  
+    return it->fileName;  
 }
 
 template<typename T>
