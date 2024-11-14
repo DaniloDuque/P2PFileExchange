@@ -13,7 +13,6 @@ void addPeer(string &port, string &ip, string &indexIp, string &indexPort, strin
     dto.port = stoi(port);
     for(auto f : fileDirectoryReader<T>(directory)) dto.peerFiles.push_back(f);
     string package = "1 " + dto.serialize();
-
     if (send(clientSocket, package.c_str(), package.size(), 0) < 0) {
         cerr << "Error sending the package" << endl;
         close(clientSocket);
