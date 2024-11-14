@@ -9,15 +9,18 @@ template<typename T>
 IndexServer<T>::IndexServer(int p) : TCPServer(p) {}
 
 template<typename T>
-void IndexServer<T>::addPeer(vector<PeerFileDTO<T>> peerFiles){
-    for(auto &pf : peerFiles) puts("File indexed!"), index.update(pf);
+void IndexServer<T>::addPeer(NewPeerDTO<T> peerInfo){
+    index.addPeer(peerInfo);
 }
 
 template<typename T>
-vector<FileInfo<T>*> IndexServer<T>::findFiles(string alias){
+vector<PeerInfo<T>*> IndexServer<T>::findMatches(string alias){
     return index.find(alias);
 }
-//
+
+template<typename T>
+File
+
 // template<typename T>
 // string IndexServer<T>::sendMatches(vector<FileInfo<T>*> &matches, string &filename, int client_socket){
 //     cout<<"Found "<<matches.size()<<" matches for "<<filename<<" in the network"<<endl;
@@ -28,10 +31,10 @@ vector<FileInfo<T>*> IndexServer<T>::findFiles(string alias){
 //     }
 //     
 // }
-//
+
 template<typename T>
-void IndexServer<T>::handleFindFile(string fileName, int client_socket){
-    vector<FileInfo<T>*> files = findFiles(fileName);
+void IndexServer<T>::handleShowMatches(string fileName, int client_socket){
+    vector<PeerInfo<T>*> files = findMatches(fileName);
     string rsp;
     if(files.empty()) rsp = "1";
     rsp = "0 ";
@@ -57,6 +60,7 @@ void IndexServer<T>::handleClient(int client_socket) {
     string rqst = toLower(readSingleBuffer(client_socket));
     if(rqst.empty()) return;
     if(rqst[0]=='1') handleAddPeer(rqst.substr(2, rqst.size()));
-    if(rqst[0]=='2') handleFindFile(rqst.substr(2, rqst.size()), client_socket);
+    if(rqst[0]=='2') handleShowMatches(rqst.substr(2, rqst.size()), client_socket);
+    if(rqst[0]=='3') handleFileRequest(rqst[2], client_socket);
     close(client_socket);
 }
