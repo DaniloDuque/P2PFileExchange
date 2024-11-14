@@ -29,10 +29,12 @@ public:
         for (auto &pfs : peer.peerFiles) {
             FileInfo<T> fileInfo(pfs.hash1, pfs.hash2, pfs.size);
             PeerFileInfo peerFileInfo{peer.ip, pfs.fileName, peer.port};
-            if (!info.count(fileInfo)) {
-                info[fileInfo] = make_shared<FileInfo<T>>(pfs.hash1, pfs.hash2, pfs.size);
+            auto it = info.find(fileInfo);
+            if (it!=info.end()) {
+                it->second->knownAs(peerFileInfo);
+                continue;
             }
-            info[fileInfo]->knownAs(peerFileInfo);
+            info[fileInfo] = make_shared<FileInfo<T>>(pfs.hash1, pfs.hash2, pfs.size, peerFileInfo);
         }
     }
 };
