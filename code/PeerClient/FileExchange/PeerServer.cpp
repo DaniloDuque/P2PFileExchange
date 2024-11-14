@@ -9,7 +9,7 @@ PeerServer<T>::PeerServer(int p, string &directory) : TCPServer(p), path(directo
 template<typename T>
 int PeerServer<T>::connectToServer(string serverIp, string serverPort){
 
-    cout<<serverIp<<' '<<serverPort<<endl;
+    cout<<"Connecting to server at: "<<serverIp<<" (Port: "<<serverPort<<" )"<<endl;
 
     int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
     if (serverSocket < 0) {
@@ -45,9 +45,9 @@ string PeerServer<T>::searchFile(FileRequestDTO<T> dto){
 
 template<typename T>
 void PeerServer<T>::handleClient(int peerSocket) {
-    cerr <<"Hello from peer server" << endl;
     string rqst = readSingleBuffer(peerSocket);
     if(rqst.size()) sendFilePart(peerSocket, FileRequestDTO<T>::deserialize(rqst));
+    cout<<"Sharing file on socket: "<<peerSocket<<endl;
     receiveAcknowledge(peerSocket); 
     close(peerSocket); 
 }

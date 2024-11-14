@@ -42,7 +42,6 @@ void IndexServer<T>::handleFileRequest(string fileName, int client_socket) {
     string rsp = getFileMatchesResponse(matches);
     sendBytes(client_socket, rsp); 
     if (rsp == "1") return;
-    cout << "Client socket: " << client_socket << endl;
     string rqst = toLower(readSingleBuffer(client_socket));  // rqst -> "name size"
     vector<string> parts = split(rqst, ' ');  
     if (parts.size() != 2) {
@@ -60,8 +59,7 @@ void IndexServer<T>::handleFileRequest(string fileName, int client_socket) {
     }
     rsp = "0 " + requestedFile->serialize();
     sendBytes(client_socket, rsp);
-    string ack = receiveAcknowledge(client_socket);
-    cout << "Received acknowledge! " << ack << endl;
+    receiveAcknowledge(client_socket);
 }
 
 template<typename T>

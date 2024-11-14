@@ -11,7 +11,7 @@ $(EXEC): $(SRC)
 	$(CC) $(CFLAGS) -o $(EXEC) $(SRC) -lm
 
 run: $(EXEC)
-	./$(EXEC) 8484 192.168.100.94 8585 aura.jpg saved 
+	./$(EXEC) 8484 192.168.100.8 8585 aura.jpg saved 
 
 clean:
 	rm -f $(EXEC)

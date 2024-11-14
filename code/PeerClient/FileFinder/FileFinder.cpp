@@ -12,10 +12,12 @@ string requestChosenFile(int indexSocket, string &fileName){
     puts("File info requested!");
     string info = readSingleBuffer(indexSocket);
     if(info=="1") return "1";
-    cout<<info<<endl;
+    printFileInfoTable(info.substr(2, info.size()));
     string name;
     ll size;
+    cout<<"Insert file name and file size: ";
     cin>>name>>size;
+    cout<<endl;
     string rsp = name + ' ' + to_string(size);
     sendBytes(indexSocket, rsp);
     string rslt = readSingleBuffer(indexSocket);

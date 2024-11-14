@@ -24,6 +24,7 @@
 #include <cctype>
 #include <set>
 #include <mutex>
+#include <iomanip>
 
 #define BUFFER_SIZE (1<<10)
 #define ll long long
@@ -67,10 +68,10 @@ void sendBytes(int socket, string& buffer) {
     ll totalBytesSent = 0;
     ll bufferSize = buffer.size();
     while (totalBytesSent < bufferSize) {
-        ssize_t bytesToSend = std::min(bufferSize - totalBytesSent, static_cast<ll>(BUFFER_SIZE));
+        ssize_t bytesToSend = min(bufferSize - totalBytesSent, static_cast<ll>(BUFFER_SIZE));
         ssize_t bytesSent = write(socket, &buffer[totalBytesSent], bytesToSend);
         if (bytesSent < 0) {
-            std::cerr << "Error in sendBytes: " << strerror(errno) << std::endl;
+            cerr << "Error in sendBytes: " << strerror(errno) << endl;
             return;  
         }
         totalBytesSent += bytesSent;
@@ -99,4 +100,19 @@ vector<string> split(const string& input, char delimiter) {
     return result;
 }
 
+
+void printFileInfoTable(const string& data) {
+    istringstream ss(data);
+    string token;
+    cout << left << setw(20) << "File Name" << setw(10) << "Size" << endl;
+    cout << "---------------------------------------" << endl;
+    while (getline(ss, token, ' ')) {
+        string fileName;
+        string fileSize;
+        istringstream pairStream(token);
+        getline(pairStream, fileName, ',');
+        getline(pairStream, fileSize, ',');
+        cout << left << setw(20) << fileName << setw(10) << fileSize << endl;
+    }
+}
 #endif
