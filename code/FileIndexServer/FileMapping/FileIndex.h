@@ -2,10 +2,11 @@
 #define FILE_INDEX_HEADER
 
 #include "FileInfo.h"
+#include "PeerFileInfo.h"
+#include "NewPeerDTO.h"
 #include <iostream>
 #include <map>
 #include <memory>
-#include "../PeerFileDTO.h"
 
 template<typename T>
 class FileIndex {
@@ -13,11 +14,25 @@ class FileIndex {
 private:
     map<FileInfo<T>, shared_ptr<FileInfo<T>>> info;
 public:
-    FileIndex();
-    FileInfo<T>* find(string); 
-    void update(PeerFileDTO<T>);
-};
+    FileIndex() {}
 
-#include "FileIndex.cpp"
+    vector<pair<string, FileInfo<T>*>> find(string alias){
+        vector<FileInfo<T>*> rs;
+        for (auto &p : info) {
+            string match = p.second->findMatch(alias);
+            if(match!="") rs.emplace_back(match, p.second);
+        }
+        return rs;
+    } 
+
+    void addPeer(NewPeerDTO<T> peer){
+        for(auto &pfs : peer.peerFiles) {
+            FileInfo<T> fileInfo(pfs.hash1, pfs.hash2, pfs.size);
+            PeerFileInfo peerFileInfo{peer.ip, pfs.fileName, peer.port};
+            if(!info.count(fileInfo)) info[fileInfo] = FileInfo<T>(pfs.hash1, pfs.hash2, pfs.size);
+            info[fileInfo]->knownAs(peerFileInfo);
+        }
+    }
+};
 
 #endif 
