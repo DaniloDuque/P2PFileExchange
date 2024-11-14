@@ -67,8 +67,8 @@ void IndexServer<T>::handleFileRequest(string fileName, int client_socket) {
 template<typename T>
 void IndexServer<T>::handleAddPeer(string rqst){
     NewPeerDTO<T> peerFiles = NewPeerDTO<T>::deserialize(rqst);
-    cout<<"Indexing files from "<<peerFiles.ip<<endl;
     addPeer(peerFiles);
+    cout << "The files from peer at IP: " << peerFiles.ip << " (Port: " << peerFiles.port << ") have been successfully indexed." << endl;
 }
 
 template<typename T>

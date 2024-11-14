@@ -13,11 +13,11 @@ void TCPServer::run() {
 
     bind(serverSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress));
 
-    listen(serverSocket, 5);
+    listen(serverSocket, 15);
 
     char ip_str[INET_ADDRSTRLEN];  
     inet_ntop(AF_INET, &serverAddress.sin_addr, ip_str, INET_ADDRSTRLEN);  
-    cout << "Server on IP " << ip_str << " listening on port " << port << endl;
+    cout << "Server listening on port " << port << endl;
 
     while (true) {
         int new_socket = accept(serverSocket, nullptr, nullptr);
