@@ -7,23 +7,23 @@
 
 struct PeerFileInfo {
 
-    string ip, filename;
+    string ip, fileName;
     int port;
 
     string serialize() const {
-        return filename + ',' + ip + ',' + to_string(port);  
+        return fileName + ',' + ip + ',' + to_string(port);  
     }
 
     static PeerFileInfo deserialize(const string& data) {
         PeerFileInfo peerFileInfo;
         istringstream ss(data);
-        string filename;
-        getline(ss, filename, ',');
+        string fileName;
+        getline(ss, fileName, ',');
         string ip_str;
         getline(ss, ip_str, ',');
         string port_str;
         getline(ss, port_str);
-        peerFileInfo.filename = filename;
+        peerFileInfo.fileName = fileName;
         peerFileInfo.ip = ip_str;
         peerFileInfo.port = stoi(port_str);
         return peerFileInfo;
@@ -32,11 +32,11 @@ struct PeerFileInfo {
     bool operator<(const PeerFileInfo& other) const {
         if (ip != other.ip) return ip < other.ip;
         if (port != other.port) return port < other.port;
-        return filename < other.filename;
+        return fileName < other.fileName;
     }
 
     bool operator==(const PeerFileInfo& other) const {
-        return ip == other.ip && port == other.port && filename == other.filename;
+        return ip == other.ip && port == other.port && fileName == other.fileName;
     }
 
 };

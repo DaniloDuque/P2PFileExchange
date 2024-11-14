@@ -4,17 +4,20 @@
 #include "../util.h"
 #include "../Network/TCPServer.h"
 #include "FileMapping/FileIndex.h"
-#include "PeerFileDTO.h"
+#include "FileMapping/FileInfo.h"
+#include "FileMapping/NewPeerDTO.h"
 
 template<typename T>
 class IndexServer : public TCPServer {
 private:
     FileIndex<T> index;
-    void addPeer(vector<PeerFileDTO<T>>);
-    FileInfo<T>* findFile(string);
+    void addPeer(NewPeerDTO<T>);
+    vector<pair<string, FileInfo<T>*>> findMatches(string);
+    string getFileMatchesResponse(vector<pair<string, FileInfo<T>*>>);
+    FileInfo<T>* searchFileInMatches(vector<pair<string, FileInfo<T>*>>, string&, T);
     void handleClient(int) override;
     void handleAddPeer(string);
-    void handleFindFile(string, int);
+    void handleFileRequest(string, int);
 public: 
     IndexServer(int);
 };

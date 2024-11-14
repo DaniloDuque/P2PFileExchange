@@ -91,4 +91,12 @@ string toLower(string s){
     return s;
 }
 
+vector<string> split(const string& input, char delimiter) {
+    vector<string> result;
+    stringstream ss(input);
+    string item;
+    while (getline(ss, item, delimiter)) result.push_back(item);
+    return result;
+}
+
 #endif

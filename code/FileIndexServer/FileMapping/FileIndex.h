@@ -17,19 +17,21 @@ public:
     FileIndex() {}
 
     vector<pair<string, FileInfo<T>*>> find(string alias){
-        vector<FileInfo<T>*> rs;
+        vector<pair<string, FileInfo<T>*>> rs;
         for (auto &p : info) {
             string match = p.second->findMatch(alias);
-            if(match!="") rs.emplace_back(match, p.second);
+            if(match!="") rs.emplace_back(match, p.second.get());
         }
         return rs;
     } 
 
-    void addPeer(NewPeerDTO<T> peer){
-        for(auto &pfs : peer.peerFiles) {
+    void addPeer(NewPeerDTO<T> peer) {
+        for (auto &pfs : peer.peerFiles) {
             FileInfo<T> fileInfo(pfs.hash1, pfs.hash2, pfs.size);
             PeerFileInfo peerFileInfo{peer.ip, pfs.fileName, peer.port};
-            if(!info.count(fileInfo)) info[fileInfo] = FileInfo<T>(pfs.hash1, pfs.hash2, pfs.size);
+            if (!info.count(fileInfo)) {
+                info[fileInfo] = make_shared<FileInfo<T>>(pfs.hash1, pfs.hash2, pfs.size);
+            }
             info[fileInfo]->knownAs(peerFileInfo);
         }
     }

@@ -42,6 +42,7 @@ void FileInfo<T>::knownAs(PeerFileInfo info) {
 
 template<typename T>
 string FileInfo<T>::findMatch(string alias){
+    for(auto &pfi : fileInfo) if(pfi.fileName == alias) return pfi.fileName;
     return "";
 } 
 
