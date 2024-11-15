@@ -1,9 +1,8 @@
 #ifndef FILEINFO_H
 #define FILEINFO_H
 
-#include <iostream>
-#include <vector>
 #include "PeerFileInfo.h"
+#include "KMP.h"
 using namespace std;
 
 template<typename T>
@@ -42,7 +41,9 @@ void FileInfo<T>::knownAs(PeerFileInfo info) {
 
 template<typename T>
 string FileInfo<T>::findMatch(string alias){
-    for(auto &pfi : fileInfo) return pfi.fileName;
+    for(auto &pfi : fileInfo) 
+        if(KMPIsSubstring(pfi.fileName, alias)) 
+            return pfi.fileName;
     return "";
 } 
 
