@@ -2,16 +2,16 @@
 #include "../FileExchange/PeerServer.h"
 #include "FileInfo.h"
 
-string requestChosenFile(int indexSocket, string &fileName){
+pair<string, string> requestChosenFile(int indexSocket, string &fileName){
     string package = "2 " + fileName;
     if (send(indexSocket, package.c_str(), package.size(), 0) < 0) {
         cerr << "Error sending the package" << endl;
         close(indexSocket);
-        return "";
+        return {"", ""};
     }
     puts("File info requested!");
     string info = readSingleBuffer(indexSocket);
-    if(info=="1") return "1";
+    if(info=="1") return {"1", ""};
     printFileInfoTable(info.substr(2, info.size()));
     string name;
     ll size;
@@ -21,13 +21,13 @@ string requestChosenFile(int indexSocket, string &fileName){
     string rsp = name + ' ' + to_string(size);
     sendBytes(indexSocket, rsp);
     string rslt = readSingleBuffer(indexSocket);
-    if(rslt.empty() || rslt == "1") return "1";
+    if(rslt.empty() || rslt == "1") return {"1", ""};
     sendAcknowledge(indexSocket);
-    return rslt;
+    return {rslt, name};
 }
 
-string getFileInfo(int indexSocket, string &fileName){
-    string info = requestChosenFile(indexSocket, fileName);
+pair<string, string> getFileInfo(int indexSocket, string &fileName){
+    pair<string, string> info = requestChosenFile(indexSocket, fileName);
     close(indexSocket);
     return info;
 }
@@ -111,10 +111,10 @@ int main(int argc, char const *argv[]) {
     }
     string mainPort=argv[1], indexIp=argv[2], indexPort=argv[3], fileName=argv[4], directory=argv[5];
     int indexSocket = PeerServer<ll>::connectToServer(indexIp, indexPort);
-    string finfo = getFileInfo(indexSocket, fileName);
+    auto [finfo, actualFileName] = getFileInfo(indexSocket, fileName);
     if(finfo.empty()) {cerr<<"Bad Response from index"<<endl; return -1;}
     if(finfo[0]!='0') {cerr<<"Requested file not found in the network"<<endl; return 0;}
     FileInfo<ll> info = FileInfo<ll>::deserialize(finfo.substr(2, finfo.size()));
-    downloadFile(info, directory, fileName);
+    downloadFile(info, directory, actualFileName);
     return 0;
 }
