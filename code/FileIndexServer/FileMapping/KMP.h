@@ -14,9 +14,8 @@ void computeLPSArray(const string& pattern, vector<int>& lps) {
             lps[i] = length;
             i++;
         } else {
-            if (length != 0) {
-                length = lps[length - 1];
-            } else {
+            if (length != 0) length = lps[length - 1];
+            else {
                 lps[i] = 0;
                 i++;
             }
@@ -35,11 +34,8 @@ bool KMPIsSubstring(const string& text, const string& pattern) {
         if (pattern[j] == text[i]) i++, j++;
         if (j == m) return true;
         else if (i < n && pattern[j] != text[i]) {
-            if (j != 0) {
-                j = lps[j - 1];
-            } else {
-                i++;
-            }
+            if (j != 0) j = lps[j - 1];
+            else i++;
         }
     }return false;
 }
