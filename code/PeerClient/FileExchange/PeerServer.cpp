@@ -64,27 +64,19 @@ template<typename T>
 void PeerServer<T>::sendFilePart(int peerSocket, FileRequestDTO<T> rqst) {
     std::string filePath = path + "/" + searchFile(rqst);
     FILE* file = fopen(filePath.c_str(), "rb");
-    
     if (!file) {
         std::cerr << "Error opening file: " << filePath << std::endl;
         return;
     }
-
     fseek(file, rqst.startByte, SEEK_SET);
     char buffer[BUFFER_SIZE];
     T leftBytes = rqst.chunkSize;
-    
     while (leftBytes > 0) {
         size_t bytesToRead = std::min(leftBytes, static_cast<T>(BUFFER_SIZE));
         size_t bytesRead = fread(buffer, 1, bytesToRead, file);
-        
         if (bytesRead > 0) {
             std::string data(buffer, bytesRead);
-            if (!sendBytes(peerSocket, data)) {
-                std::cerr << "Error sending data to peer." << std::endl;
-                break;
-            }
-
+            sendBytes(peerSocket, data);
             leftBytes -= bytesRead;
             string ack = readBytes(peerSocket, 3); 
             if (ack != "ACK") {
@@ -95,7 +87,5 @@ void PeerServer<T>::sendFilePart(int peerSocket, FileRequestDTO<T> rqst) {
             std::cerr << "Error reading from file or end of file." << std::endl;
             break;
         }
-    }
-    
-    fclose(file);
+    }fclose(file);
 }
