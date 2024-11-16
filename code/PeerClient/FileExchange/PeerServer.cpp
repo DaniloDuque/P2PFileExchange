@@ -71,10 +71,10 @@ void PeerServer<T>::sendFilePart(int peerSocket, FileRequestDTO<T> rqst) {
             string data(buffer, bytesRead);
             sendBytes(peerSocket, data);
             leftBytes -= bytesRead;
-            if (!receiveAcknowledge(peerSocket)) {
-                cerr << "Error receiving ACK from client." << endl;
-                break;
-            }
+            // if (!receiveAcknowledge(peerSocket)) {
+            //     cerr << "Error receiving ACK from client." << endl;
+            //     break;
+            // }
         } else {
             cerr << "Error reading from file or end of file." << endl;
             break;

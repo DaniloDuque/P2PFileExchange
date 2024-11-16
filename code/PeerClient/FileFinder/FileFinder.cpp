@@ -54,7 +54,7 @@ void requestFileChunk(FileRequestDTO<ll> fileInfo, PeerFileInfo peerInfo, string
             break;
         }
         fwrite(buffer, 1, bytesReceived, file);
-        sendAcknowledge(peerSocket);
+        //sendAcknowledge(peerSocket);
         bytesRead += bytesReceived;
     }
     fclose(file); close(peerSocket);
