@@ -49,8 +49,6 @@ void PeerServer<T>::handleClient(int peerSocket) {
     string rqst = readSingleBuffer(peerSocket);
     cout<<"Sharing file on socket: "<<peerSocket<<endl;
     if(rqst.size()) sendFilePart(peerSocket, FileRequestDTO<T>::deserialize(rqst));
-    receiveAcknowledge(peerSocket); 
-    //close(peerSocket); //TODO: Manage this 
 }
 
 template<typename T>
@@ -69,12 +67,8 @@ void PeerServer<T>::sendFilePart(int peerSocket, FileRequestDTO<T> rqst) {
         size_t bytesRead = fread(buffer, 1, bytesToRead, file);
         if (bytesRead > 0) {
             string data(buffer, bytesRead);
-            sendBytes(peerSocket, data);
+            if(!sendBytes(peerSocket, data)) break;
             leftBytes -= bytesRead;
-            // if (!receiveAcknowledge(peerSocket)) {
-            //     cerr << "Error receiving ACK from client." << endl;
-            //     break;
-            // }
         } else {
             cerr << "Error reading from file or end of file." << endl;
             break;
