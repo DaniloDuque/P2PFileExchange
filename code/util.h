@@ -26,7 +26,7 @@
 #include <mutex>
 #include <iomanip>
 
-#define BUFFER_SIZE (1<<10)
+#define BUFFER_SIZE (1<<16)
 #define ll long long
 #define uchar unsigned char
 

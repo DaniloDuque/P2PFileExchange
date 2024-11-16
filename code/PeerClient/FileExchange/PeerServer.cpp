@@ -54,8 +54,8 @@ string PeerServer<T>::searchFile(FileRequestDTO<T> dto){
 template<typename T>
 void PeerServer<T>::handleClient(int peerSocket) {
     string rqst = readSingleBuffer(peerSocket);
-    if(rqst.size()) sendFilePart(peerSocket, FileRequestDTO<T>::deserialize(rqst));
     cout<<"Sharing file on socket: "<<peerSocket<<endl;
+    if(rqst.size()) sendFilePart(peerSocket, FileRequestDTO<T>::deserialize(rqst));
     receiveAcknowledge(peerSocket); 
     close(peerSocket); 
 }
@@ -64,19 +64,27 @@ template<typename T>
 void PeerServer<T>::sendFilePart(int peerSocket, FileRequestDTO<T> rqst) {
     std::string filePath = path + "/" + searchFile(rqst);
     FILE* file = fopen(filePath.c_str(), "rb");
+    
     if (!file) {
         std::cerr << "Error opening file: " << filePath << std::endl;
         return;
     }
+
     fseek(file, rqst.startByte, SEEK_SET);
     char buffer[BUFFER_SIZE];
     T leftBytes = rqst.chunkSize;
+    
     while (leftBytes > 0) {
         size_t bytesToRead = std::min(leftBytes, static_cast<T>(BUFFER_SIZE));
         size_t bytesRead = fread(buffer, 1, bytesToRead, file);
+        
         if (bytesRead > 0) {
             std::string data(buffer, bytesRead);
-            sendBytes(peerSocket, data);
+            if (sendBytes(peerSocket, data) < 0) {
+                std::cerr << "Error sending data to peer." << std::endl;
+                break;
+            }
+
             leftBytes -= bytesRead;
             string ack = readBytes(peerSocket, 3); 
             if (ack != "ACK") {
@@ -87,5 +95,7 @@ void PeerServer<T>::sendFilePart(int peerSocket, FileRequestDTO<T> rqst) {
             std::cerr << "Error reading from file or end of file." << std::endl;
             break;
         }
-    }fclose(file);
+    }
+    
+    fclose(file);
 }
