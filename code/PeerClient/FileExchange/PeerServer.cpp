@@ -80,7 +80,7 @@ void PeerServer<T>::sendFilePart(int peerSocket, FileRequestDTO<T> rqst) {
         
         if (bytesRead > 0) {
             std::string data(buffer, bytesRead);
-            if (sendBytes(peerSocket, data) < 0) {
+            if (!sendBytes(peerSocket, data)) {
                 std::cerr << "Error sending data to peer." << std::endl;
                 break;
             }

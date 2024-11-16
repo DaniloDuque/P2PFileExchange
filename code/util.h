@@ -64,7 +64,7 @@ string readBytes(int socket, int bufferSize) {
     return info;
 }
 
-void sendBytes(int socket, string& buffer) {
+bool sendBytes(int socket, string& buffer) {
     ll totalBytesSent = 0;
     ll bufferSize = buffer.size();
     while (totalBytesSent < bufferSize) {
@@ -72,10 +72,10 @@ void sendBytes(int socket, string& buffer) {
         ssize_t bytesSent = write(socket, &buffer[totalBytesSent], bytesToSend);
         if (bytesSent < 0) {
             cerr << "Error in sendBytes: " << strerror(errno) << endl;
-            return;  
+            return 0;  
         }
         totalBytesSent += bytesSent;
-    }
+    }return 1;
 }
 
 void sendAcknowledge(int socket){

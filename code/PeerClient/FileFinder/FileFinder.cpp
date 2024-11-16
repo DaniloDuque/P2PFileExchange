@@ -40,7 +40,7 @@ void requestFileChunk(FileRequestDTO<ll> fileInfo, PeerFileInfo peerInfo, string
     }
 
     string finfo = fileInfo.serialize();
-    if (sendBytes(peerSocket, finfo) < 0) {
+    if (!sendBytes(peerSocket, finfo)) {
         cerr << "Error sending file request to peer." << endl;
         close(peerSocket);
         return;
@@ -74,7 +74,7 @@ void requestFileChunk(FileRequestDTO<ll> fileInfo, PeerFileInfo peerInfo, string
         bytesRead += bytesReceived;
 
         string ack = "ACK";
-        if (sendBytes(peerSocket, ack) < 0) {
+        if (!sendBytes(peerSocket, ack)) {
             cerr << "Error sending ACK to peer." << endl;
             break;
         }
