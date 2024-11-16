@@ -17,6 +17,14 @@ int PeerServer<T>::connectToServer(string serverIp, string serverPort){
         return -1;
     }
 
+    T bufferSize = BUFFER_SIZE;
+    if (setsockopt(serverSocket, SOL_SOCKET, SO_RCVBUF, &bufferSize, sizeof(bufferSize)) < 0) {
+        cerr << "Error setting receive buffer size: " << strerror(errno) << endl;
+    }
+    if (setsockopt(serverSocket, SOL_SOCKET, SO_SNDBUF, &bufferSize, sizeof(bufferSize)) < 0) {
+        cerr << "Error setting send buffer size: " << strerror(errno) << endl;
+    }
+
     sockaddr_in serverAddress;
     serverAddress.sin_family = AF_INET;
     serverAddress.sin_port = htons(stoi(serverPort));

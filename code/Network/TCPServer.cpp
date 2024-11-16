@@ -5,6 +5,14 @@ TCPServer::TCPServer(int p) : port(p) {}
 void TCPServer::run() {
 
     int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+    int bufferSize = BUFFER_SIZE;
+
+    if (setsockopt(serverSocket, SOL_SOCKET, SO_RCVBUF, &bufferSize, sizeof(bufferSize)) < 0) {
+        cerr << "Error setting receive buffer size: " << strerror(errno) << endl;
+    }
+    if (setsockopt(serverSocket, SOL_SOCKET, SO_SNDBUF, &bufferSize, sizeof(bufferSize)) < 0) {
+        cerr << "Error setting send buffer size: " << strerror(errno) << endl;
+    }
 
     sockaddr_in serverAddress;
     serverAddress.sin_family = AF_INET;
