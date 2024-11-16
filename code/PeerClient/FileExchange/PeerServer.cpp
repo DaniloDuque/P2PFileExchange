@@ -8,15 +8,12 @@ PeerServer<T>::PeerServer(int p, string &directory) : TCPServer(p), path(directo
 
 template<typename T>
 int PeerServer<T>::connectToServer(string serverIp, string serverPort){
-
     cout<<"Connecting to server at: "<<serverIp<<" (Port: "<<serverPort<<")"<<endl;
-
     int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
     if (serverSocket < 0) {
         cerr << "Error creating socket" << endl;
         return -1;
     }
-
     T bufferSize = BUFFER_SIZE;
     if (setsockopt(serverSocket, SOL_SOCKET, SO_RCVBUF, &bufferSize, sizeof(bufferSize)) < 0) {
         cerr << "Error setting receive buffer size: " << strerror(errno) << endl;
@@ -24,23 +21,19 @@ int PeerServer<T>::connectToServer(string serverIp, string serverPort){
     if (setsockopt(serverSocket, SOL_SOCKET, SO_SNDBUF, &bufferSize, sizeof(bufferSize)) < 0) {
         cerr << "Error setting send buffer size: " << strerror(errno) << endl;
     }
-
     sockaddr_in serverAddress;
     serverAddress.sin_family = AF_INET;
     serverAddress.sin_port = htons(stoi(serverPort));
-
     if (inet_pton(AF_INET, serverIp.c_str(), &serverAddress.sin_addr) <= 0) {
         cerr << "Error: Invalid address/ Address not supported" << endl;
         close(serverSocket);
         return -1;
     }
-
     if (connect(serverSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) < 0) {
         cerr << "Error connecting to the server" << endl;
         close(serverSocket);
         return -1;
     }
-
     return serverSocket;
 }
 
@@ -78,8 +71,7 @@ void PeerServer<T>::sendFilePart(int peerSocket, FileRequestDTO<T> rqst) {
             std::string data(buffer, bytesRead);
             sendBytes(peerSocket, data);
             leftBytes -= bytesRead;
-            string ack = readBytes(peerSocket, 3); 
-            if (ack != "ACK") {
+            if (!receiveAcknowledge(peerSocket)) {
                 std::cerr << "Error receiving ACK from client." << std::endl;
                 break;
             }

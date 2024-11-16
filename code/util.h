@@ -29,22 +29,16 @@
 #define BUFFER_SIZE (1<<16)
 #define ll long long
 #define uchar unsigned char
-
 using namespace std;
 
-string sockaddr_in6_to_string(const sockaddr_in6& addr) {
-    char str[INET6_ADDRSTRLEN]; 
-    if (inet_ntop(AF_INET6, &addr.sin6_addr, str, sizeof(str)) == nullptr) {
-        return "Error in IP conversion"; 
-    }
-    return string(str); 
-}
-
-string readSingleBuffer(int socket){
+string readSingleBuffer(int socket) {
     char buffer[BUFFER_SIZE] = {};
-    read(socket, buffer, BUFFER_SIZE);
-    string info = buffer;
-    return info;
+    ssize_t bytesRead = recv(socket, buffer, BUFFER_SIZE, 0);
+    if (bytesRead < 0) {
+        cerr << "Error in readSingleBuffer: " << strerror(errno) << endl;
+        return "";
+    }
+    return string(buffer, bytesRead);
 }
 
 string readBytes(int socket, int bufferSize) {
@@ -52,12 +46,12 @@ string readBytes(int socket, int bufferSize) {
     info.resize(bufferSize);  
     ll totalBytesRead = 0;
     while (totalBytesRead < bufferSize) {
-        ssize_t bytesRead = read(socket, &info[totalBytesRead], bufferSize - totalBytesRead);
+        ssize_t bytesRead = recv(socket, &info[totalBytesRead], bufferSize - totalBytesRead, 0);
         if (bytesRead < 0) {
-            cerr << "Error in readBuffer: " << strerror(errno) << endl;
+            cerr << "Error in readBytes: " << strerror(errno) << endl;
             return "";  
         }
-        if (bytesRead == 0) break;
+        if (bytesRead == 0) break;  
         totalBytesRead += bytesRead;
     }
     info.resize(totalBytesRead);
@@ -69,26 +63,28 @@ bool sendBytes(int socket, string& buffer) {
     ll bufferSize = buffer.size();
     while (totalBytesSent < bufferSize) {
         ssize_t bytesToSend = min(bufferSize - totalBytesSent, static_cast<ll>(BUFFER_SIZE));
-        ssize_t bytesSent = write(socket, &buffer[totalBytesSent], bytesToSend);
+        ssize_t bytesSent = send(socket, &buffer[totalBytesSent], bytesToSend, 0);
         if (bytesSent < 0) {
             cerr << "Error in sendBytes: " << strerror(errno) << endl;
-            return 0;  
+            return false;
         }
         totalBytesSent += bytesSent;
-    }return 1;
+    }
+    return true;
 }
 
-void sendAcknowledge(int socket){
-    string ack = "0";
+void sendAcknowledge(int socket) {
+    const string ack = "ACK";
     send(socket, ack.c_str(), ack.size(), 0);
 }
 
-string receiveAcknowledge(int socket){
-    return readBytes(socket, 1);
+bool receiveAcknowledge(int socket) {
+    const string ack = "ACK";
+    return readBytes(socket, ack.size()) == ack;
 }
 
-string toLower(string s){
-    transform(s.begin(), s.end(), s.begin(), [](unsigned char c){ return tolower(c);});
+string toLower(string s) {
+    transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return tolower(c); });
     return s;
 }
 
@@ -99,7 +95,6 @@ vector<string> split(const string& input, char delimiter) {
     while (getline(ss, item, delimiter)) result.push_back(item);
     return result;
 }
-
 
 void printFileInfoTable(const string& data) {
     istringstream ss(data);
@@ -115,4 +110,5 @@ void printFileInfoTable(const string& data) {
         cout << left << setw(20) << fileName << setw(10) << fileSize << endl;
     }
 }
+
 #endif
