@@ -62,30 +62,61 @@ void PeerServer<T>::handleClient(int peerSocket) {
 
 template<typename T>
 void PeerServer<T>::sendFilePart(int peerSocket, FileRequestDTO<T> rqst) {
+    std::lock_guard<std::mutex> lock(fileMutex);
+    
     std::string filePath = path + "/" + searchFile(rqst);
     FILE* file = fopen(filePath.c_str(), "rb");
     if (!file) {
         std::cerr << "Error opening file: " << filePath << std::endl;
         return;
     }
-    fseek(file, rqst.startByte, SEEK_SET);
+
+    if (fseek(file, rqst.startByte, SEEK_SET) != 0) {
+        std::cerr << "Error seeking to position " << rqst.startByte << std::endl;
+        fclose(file);
+        return;
+    }
+
     char buffer[BUFFER_SIZE];
     T leftBytes = rqst.chunkSize;
-    while (leftBytes > 0) {
+    bool error = false;
+
+    while (leftBytes > 0 && !error) {
         size_t bytesToRead = std::min(leftBytes, static_cast<T>(BUFFER_SIZE));
         size_t bytesRead = fread(buffer, 1, bytesToRead, file);
+        
         if (bytesRead > 0) {
-            std::string data(buffer, bytesRead);
-            sendBytes(peerSocket, data);
+            std::lock_guard<std::mutex> sockLock(socketMutex);
+            if (send(peerSocket, buffer, bytesRead, MSG_NOSIGNAL) < 0) {
+                std::cerr << "Error sending data: " << strerror(errno) << std::endl;
+                error = true;
+                break;
+            }
+            
             leftBytes -= bytesRead;
-            string ack = readBytes(peerSocket, 3); 
-            if (ack != "ACK") {
+            
+            struct timeval timeout;
+            timeout.tv_sec = 5;
+            timeout.tv_usec = 0;
+            setsockopt(peerSocket, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+            
+            char ackBuffer[4] = {0};
+            ssize_t ackBytes = recv(peerSocket, ackBuffer, 3, 0);
+            if (ackBytes != 3 || strncmp(ackBuffer, "ACK", 3) != 0) {
                 std::cerr << "Error receiving ACK from client." << std::endl;
+                error = true;
                 break;
             }
         } else {
-            std::cerr << "Error reading from file or end of file." << std::endl;
+            if (ferror(file)) {
+                std::cerr << "Error reading from file: " << strerror(errno) << std::endl;
+            } else {
+                std::cerr << "Unexpected end of file." << std::endl;
+            }
+            error = true;
             break;
         }
-    }fclose(file);
+    }
+    
+    fclose(file);
 }

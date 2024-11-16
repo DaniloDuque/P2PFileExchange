@@ -5,6 +5,8 @@
 #include "../../Network/TCPServer.h"
 #include "FileRequestDTO.h"
 #include "../FileReader/fileReader.cpp"
+#include <mutex>
+#include <condition_variable>
 
 template<typename T>
 class PeerServer : public TCPServer {
@@ -16,6 +18,8 @@ private:
     void handleClient(int) override;
     void sendFilePart(int, FileRequestDTO<T>);
     string searchFile(FileRequestDTO<T>);
+    std::mutex socketMutex;
+    std::mutex fileMutex;
 
 public:
 
