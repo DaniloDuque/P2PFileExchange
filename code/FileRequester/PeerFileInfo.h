@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <netinet/in.h>
-#include "../../util.h"
+#include "../util.h"
 
 struct PeerFileInfo {
 

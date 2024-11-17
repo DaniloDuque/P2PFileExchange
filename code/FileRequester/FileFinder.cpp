@@ -1,5 +1,5 @@
-#include "../../util.h"
-#include "../FileExchange/PeerServer.h"
+#include "../util.h"
+#include "../PeerServer/FileExchange/PeerServer.h"
 #include "FileInfo.h"
 
 pair<string, string> requestChosenFile(int indexSocket, string &fileName){

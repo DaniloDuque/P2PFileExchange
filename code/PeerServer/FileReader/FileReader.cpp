@@ -1,7 +1,7 @@
 #include <filesystem>
 #include <iostream>
 #include <utility>
-#include "../../Hash/HashGenerator.h"
+#include "Hashing/HashGenerator.h"
 #include "../File.h"
 
 template<typename T>
