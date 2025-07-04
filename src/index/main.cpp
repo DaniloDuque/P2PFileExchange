@@ -1,13 +1,14 @@
-#include "IndexServer.h"
+#include "IndexServer.cpp"
 #include "../util.h"
+#include "../logger/Logger.h"
 
 int main(int argc, char const *argv[]) {
     if (argc != 2) {
-        std::cerr << "Use: " << argv[0] << " <port>" << std::endl;
+        logger.error("Wrong number of arguments");
         return 1;
     }
     int indexPort = stoi(argv[1]);
-    IndexServer<ll> server(indexPort);
+    IndexServer server(indexPort);
     server.run();
     return 0;
 }

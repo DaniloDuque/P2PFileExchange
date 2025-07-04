@@ -1,5 +1,4 @@
-#ifndef UTIL_HEADER
-#define UTIL_HEADER
+#pragma once
 
 #include <iostream>
 #include <thread>
@@ -31,7 +30,7 @@
 #define uchar unsigned char
 using namespace std;
 
-string readSingleBuffer(int socket) {
+inline string readSingleBuffer(int socket) {
     char buffer[BUFFER_SIZE] = {};
     ssize_t bytesRead = recv(socket, buffer, BUFFER_SIZE, 0);
     if (bytesRead < 0) {
@@ -41,7 +40,7 @@ string readSingleBuffer(int socket) {
     return string(buffer, bytesRead);
 }
 
-string readBytes(int socket, int bufferSize) {
+inline string readBytes(int socket, int bufferSize) {
     string info;
     info.resize(bufferSize);  
     ll totalBytesRead = 0;
@@ -58,7 +57,7 @@ string readBytes(int socket, int bufferSize) {
     return info;
 }
 
-bool sendBytes(int socket, string& buffer) {
+inline bool sendBytes(int socket, string& buffer) {
     ll totalBytesSent = 0;
     ll bufferSize = buffer.size();
     while (totalBytesSent < bufferSize) {
@@ -73,22 +72,22 @@ bool sendBytes(int socket, string& buffer) {
     return true;
 }
 
-void sendAcknowledge(int socket) {
+inline void sendAcknowledge(int socket) {
     const string ack = "ACK";
     send(socket, ack.c_str(), ack.size(), 0);
 }
 
-bool receiveAcknowledge(int socket) {
+inline bool receiveAcknowledge(int socket) {
     const string ack = "ACK";
     return readBytes(socket, ack.size()) == ack;
 }
 
-string toLower(string s) {
+inline string toLower(string s) {
     transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return tolower(c); });
     return s;
 }
 
-vector<string> split(const string& input, char delimiter) {
+inline vector<string> split(const string& input, char delimiter) {
     vector<string> result;
     stringstream ss(input);
     string item;
@@ -96,7 +95,7 @@ vector<string> split(const string& input, char delimiter) {
     return result;
 }
 
-void printFileInfoTable(const string& data) {
+inline void printFileInfoTable(const string& data) {
     istringstream ss(data);
     string token;
     cout << left << setw(20) << "File Name" << setw(10) << "Size" << endl;
@@ -110,5 +109,3 @@ void printFileInfoTable(const string& data) {
         cout << left << setw(20) << fileName << setw(10) << fileSize << endl;
     }
 }
-
-#endif
