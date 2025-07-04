@@ -1,15 +1,16 @@
 #include "../util.h"
 #include "../PeerServer/FileExchange/PeerServer.h"
-#include "FileInfo.h"
+#include "FileInfo.cpp"
+#include "../../logger/Logger.h"
 
 pair<string, string> requestChosenFile(int indexSocket, string &fileName){
     string package = "2 " + fileName;
     if (send(indexSocket, package.c_str(), package.size(), 0) < 0) {
-        cerr << "Error sending the package" << endl;
+        logger.error("Error sending the package");
         close(indexSocket);
         return {"", ""};
     }
-    puts("File info requested!");
+    logger.info("File info requested!");
     string info = readSingleBuffer(indexSocket);
     if(info=="1") return {"1", ""};
     printFileInfoTable(info.substr(2, info.size()));
@@ -40,17 +41,17 @@ void requestFileChunk(FileRequestDTO<ll> fileInfo, PeerFileInfo peerInfo, string
     ll bytesRead = 0;
     char buffer[BUFFER_SIZE];  
     while (bytesRead < fileInfo.chunkSize) {
-        cout << "Bytes read: " << bytesRead << endl;
+        logger.info("Bytes read: " + to_string(bytesRead));
         size_t bytesToReceive = min(fileInfo.chunkSize - bytesRead, static_cast<ll>(BUFFER_SIZE));
         ssize_t bytesReceived = read(peerSocket, buffer, bytesToReceive);
         if (bytesReceived < 0) {
-            cerr << "Error receiving data from socket: " << strerror(errno) << endl;
+            logger.error("Error receiving data from socket: " + string(strerror(errno)));
             fclose(file);
             close(peerSocket);
             return;
         }
         if (bytesReceived == 0) {
-            cerr << "Connection closed by peer." << endl;
+            logger.error("Connection closed by peer");
             break;
         }
         fwrite(buffer, 1, bytesReceived, file);
@@ -85,7 +86,7 @@ void downloadFile(FileInfo<ll> fileInfo, string directory, string fileName) {
     for (const auto& filePath : files) {
         FILE* cub = fopen(filePath.c_str(), "rb");
         if (!cub) {
-            cerr << "Error opening chunk file: " << filePath << endl;
+            logger.error("Error opening chunk file: " + filePath);
             fclose(file);
             return;
         }
@@ -104,14 +105,14 @@ void downloadFile(FileInfo<ll> fileInfo, string directory, string fileName) {
 
 int main(int argc, char const *argv[]) {
     if (argc < 6) {  
-        cerr << "Usage: " << argv[0] << " <mainPort> <indexIp> <indexPort> <directory>" << endl;
+        logger.error("Usage: " + string(argv[0]) + " <mainPort> <indexIp> <indexPort> <directory>");
         return -1;
     }
     string mainPort=argv[1], indexIp=argv[2], indexPort=argv[3], fileName=argv[4], directory=argv[5];
     int indexSocket = PeerServer<ll>::connectToServer(indexIp, indexPort);
     auto [finfo, actualFileName] = getFileInfo(indexSocket, fileName);
-    if(finfo.empty()) {cerr<<"Bad Response from index"<<endl; return -1;}
-    if(finfo[0]!='0') {cerr<<"Requested file not found in the network"<<endl; return 0;}
+    if(finfo.empty()) {logger.error("Bad Response from index"); return -1;}
+    if(finfo[0]!='0') {logger.error("Requested file not found in the network"); return 0;}
     FileInfo<ll> info = FileInfo<ll>::deserialize(finfo.substr(2, finfo.size()));
     downloadFile(info, directory, actualFileName);
     return 0;

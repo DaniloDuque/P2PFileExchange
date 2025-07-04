@@ -1,9 +1,9 @@
-SRC = RunPeer.cpp
+SRC = main.cpp ../logger/ConsoleLogger.cpp
 
 EXEC = a.out
 
 CC = g++
-CFLAGS = -Wall -Wextra
+CFLAGS = -Wall -Wextra -std=c++20
 
 all: $(EXEC)
 
