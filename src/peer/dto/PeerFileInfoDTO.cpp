@@ -1,11 +1,9 @@
-#ifndef PEER_INFO_HEADER
-#define PEER_INFO_HEADER
-
+#pragma once
 #include <iostream>
 #include <netinet/in.h>
-#include "../util.h"
+#include "../../util.h"
 
-struct PeerFileInfo {
+struct PeerFileInfoDTO {
 
     string ip, fileName;
     int port;
@@ -14,8 +12,8 @@ struct PeerFileInfo {
         return fileName + ',' + ip + ',' + to_string(port);  
     }
 
-    static PeerFileInfo deserialize(const string& data) {
-        PeerFileInfo peerFileInfo;
+    static PeerFileInfoDTO deserialize(const string& data) {
+        PeerFileInfoDTO peerFileInfo;
         istringstream ss(data);
         string fileName;
         getline(ss, fileName, ',');
@@ -29,16 +27,14 @@ struct PeerFileInfo {
         return peerFileInfo;
     }
 
-    bool operator<(const PeerFileInfo& other) const {
+    bool operator<(const PeerFileInfoDTO& other) const {
         if (ip != other.ip) return ip < other.ip;
         if (port != other.port) return port < other.port;
         return fileName < other.fileName;
     }
 
-    bool operator==(const PeerFileInfo& other) const {
+    bool operator==(const PeerFileInfoDTO& other) const {
         return ip == other.ip && port == other.port && fileName == other.fileName;
     }
 
 };
-
-#endif

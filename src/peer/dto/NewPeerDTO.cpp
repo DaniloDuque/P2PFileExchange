@@ -1,14 +1,11 @@
-#ifndef NEW_PEER_DTO_HEADER
-#define NEW_PEER_DTO_HEADER
-
+#pragma once
 #include <vector>
-#include "File.h"
+#include "FileDTO.cpp"
 
-template<typename T>
 struct NewPeerDTO {
     string ip;
     int port;
-    vector<File<T>> peerFiles;
+    vector<FileDTO> peerFiles;
     
     string serialize() {
         string ser = ip + ',' + to_string(port);
@@ -16,8 +13,8 @@ struct NewPeerDTO {
         return ser;
     }
 
-    static NewPeerDTO<T> deserialize(string &data) {
-        NewPeerDTO<T> peerDTO;
+    static NewPeerDTO deserialize(string &data) {
+        NewPeerDTO peerDTO;
         istringstream ss(data);  
         string token;
         getline(ss, peerDTO.ip, ',');
@@ -25,12 +22,10 @@ struct NewPeerDTO {
         peerDTO.port = stoi(token);  
         while (getline(ss, token, ' ')) {
             if (!token.empty()) {  
-                peerDTO.peerFiles.push_back(File<T>::deserialize(token));
+                peerDTO.peerFiles.push_back(FileDTO::deserialize(token));
             }
         }
         return peerDTO;
     }
 
 };
-
-#endif

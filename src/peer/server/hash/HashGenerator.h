@@ -8,7 +8,6 @@ ll polynomialHash(const char* data, size_t length, ll base = 257, ll mod = 92233
     return hashValue;
 }
 
-
 ll fnv1aHash(const char* data, size_t length, ll mod = 9223372036854775783LL) {
     const ll FNV_PRIME = 1099511628211LL;
     const ll FNV_OFFSET_BASIS = 14695981039346656037ULL;
@@ -20,7 +19,6 @@ ll fnv1aHash(const char* data, size_t length, ll mod = 9223372036854775783LL) {
     }
     return hashValue;
 }
-
 
 std::pair<ll, ll> doubleHashFile(const std::string& filePath) {
     std::ifstream file(filePath, std::ios::binary);
@@ -43,4 +41,3 @@ std::pair<ll, ll> doubleHashFile(const std::string& filePath) {
     file.close();
     return {hash1, hash2};
 }
-
