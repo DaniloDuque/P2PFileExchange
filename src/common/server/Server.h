@@ -1,12 +1,12 @@
 #pragma once
-#include "../../util.h"
 
 class Server {
 protected:
-    int port;
+    const int port;
     virtual void handleClient(int) = 0;
 
 public:
-    Server(int port) : port(port) {}
+    virtual ~Server() = default;
+    explicit Server(const int port) : port(port) {}
     virtual void run() = 0;
 };

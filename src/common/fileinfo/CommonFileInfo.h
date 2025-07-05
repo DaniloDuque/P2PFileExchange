@@ -1,8 +1,6 @@
 #pragma once
 #include <iostream>
-#include <vector>
-#include "../../util.h"
-#include "../../dto/PeerFileInfoDTO.cpp"
+#include "dto/PeerFileInfoDTO.cpp"
 using namespace std;
 
 template<typename Derived>
@@ -12,12 +10,12 @@ protected:
     set<PeerFileInfoDTO> fileInfo; 
 
 public:
-    void knownAs(PeerFileInfoDTO info) {
+    void knownAs(const PeerFileInfoDTO& info) {
         fileInfo.insert(info);
     }
 
-    CommonFileInfo(ll h1, ll h2, ll sz) : hash1(h1), hash2(h2), size(sz) {};
-    CommonFileInfo(ll h1, ll h2, ll sz, PeerFileInfoDTO info) : hash1(h1), hash2(h2), size(sz) {
+    CommonFileInfo(const ll h1, const ll h2, const ll sz) : hash1(h1), hash2(h2), size(sz) {};
+    CommonFileInfo(const ll h1, const ll h2, const ll sz, const PeerFileInfoDTO &info) : hash1(h1), hash2(h2), size(sz) {
         knownAs(info);
     };
 

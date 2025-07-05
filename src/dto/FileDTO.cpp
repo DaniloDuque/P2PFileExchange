@@ -1,28 +1,27 @@
 #pragma once
-#include "../util.h"
-#include <string>
+#include "util.h"
 
 struct FileDTO {
-    ll hash1, hash2, size;
+    ll hash1{}, hash2{}, size{};
     string fileName;
 
     FileDTO() = default;
-    FileDTO(ll h1, ll h2, ll sz, string alias) : hash1(h1), hash2(h2), size(sz), fileName(alias) {}
+    FileDTO(const ll h1, const ll h2, const ll sz, const string& alias) : hash1(h1), hash2(h2), size(sz), fileName(alias) {}
 
-    string serialize() {
+    string serialize() const {
         return to_string(hash1) + ',' + to_string(hash2) + ',' + to_string(size) + ',' + fileName;
     }
 
-    static FileDTO deserialize(string &data) {
+    static FileDTO deserialize(const string &data) {
         FileDTO file;
         istringstream ss(data);
         string token;
         getline(ss, token, ',');
-        file.hash1 = static_cast<ll>(stoll(token)); 
+        file.hash1 = stoll(token);
         getline(ss, token, ',');
-        file.hash2 = static_cast<ll>(stoll(token));
+        file.hash2 = stoll(token);
         getline(ss, token, ',');
-        file.size = static_cast<ll>(stoll(token));  
+        file.size = stoll(token);
         getline(ss, file.fileName); 
         return file;
     }

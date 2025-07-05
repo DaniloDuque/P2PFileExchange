@@ -1,23 +1,22 @@
 #pragma once
-#include "../util.h"
-#include "../common/server/TCPServer.cpp"
-#include "fileindex/FileIndex.cpp"
-#include "file/FileInfo.cpp"
-#include "../dto/NewPeerDTO.cpp"
+#include "util.h"
+#include "common/server/TCPServer.cpp"
+#include "index/fileindex/FileIndex.cpp"
+#include "index/file/FileInfo.cpp"
+#include "dto/NewPeerDTO.cpp"
 
-class IndexServer : public TCPServer {
-private:
+class IndexServer final : public TCPServer {
     FileIndex index;
 
-    void addPeer(NewPeerDTO dto) {
+    void addPeer(const NewPeerDTO& dto) {
         index.addPeer(dto);
     }
 
-    vector<pair<string, FileInfo*>> findMatches(string alias) {
+    vector<pair<string, FileInfo*>> findMatches(const string& alias) const {
         return index.find(alias);
     }
 
-    string getFileMatchesResponse(vector<pair<string, FileInfo*>> matches) {
+    static string getFileMatchesResponse(vector<pair<string, FileInfo*>> matches) {
         if(matches.empty()) return "1";
         string rsp = "0";
         for(auto &[fileName, fileInfo] : matches){
@@ -26,44 +25,44 @@ private:
         return rsp;
     }
 
-    FileInfo* searchFileInMatches(vector<pair<string, FileInfo*>> matches, string& fileName, ll size) {
+    static FileInfo* searchFileInMatches(vector<pair<string, FileInfo*>> matches, const string& fileName, const ll size) {
         for (auto &[name, fileInfo] : matches) {
             if (name == fileName && fileInfo->getSize() == size) return fileInfo;
         }return nullptr; 
     }
 
-    void handleClient(int client_socket) override {
+    void handleClient(const int client_socket) override {
         logger.info("Request received!");
-        string rqst = toLower(readSingleBuffer(client_socket));
-        if(rqst.empty()) return;
-        if(rqst[0]=='1') handleAddPeer(rqst.substr(2, rqst.size()));
-        if(rqst[0]=='2') handleFileRequest(rqst.substr(2, rqst.size()), client_socket);
+        const string request = toLower(readSingleBuffer(client_socket));
+        if(request.empty()) return;
+        if(request[0]=='1') handleAddPeer(request.substr(2, request.size()));
+        if(request[0]=='2') handleFileRequest(request.substr(2, request.size()), client_socket);
         close(client_socket);
     }
 
-    void handleAddPeer(string request) {
+    void handleAddPeer(const string& request) {
         logger.info("New Peer registration started");
-        NewPeerDTO peerFiles = NewPeerDTO::deserialize(request);
+        const NewPeerDTO peerFiles = NewPeerDTO::deserialize(request);
         addPeer(peerFiles);
         logger.info("New Peer registration completed - " + peerFiles.ip + ":" + to_string(peerFiles.port) + " added to index");
     }
 
-    void handleFileRequest(string filename, int client_socket) {
+    void handleFileRequest(const string& filename, const int client_socket) const {
         logger.info("Searching for " + filename + " in the network");
-        vector<pair<string, FileInfo*>> matches = findMatches(filename);
+        const vector<pair<string, FileInfo*>> matches = findMatches(filename);
         string rsp = getFileMatchesResponse(matches);
         sendBytes(client_socket, rsp); 
         if (rsp == "1") return;
-        string rqst = toLower(readSingleBuffer(client_socket));  // rqst -> "name size"
-        vector<string> parts = split(rqst, ' ');  
+        const string request = toLower(readSingleBuffer(client_socket));  // rqst -> "name size"
+        const vector<string> parts = split(request, ' ');
         if (parts.size() != 2) {
             logger.error("Invalid request format");
             sendBytes(client_socket, rsp = "1");
             return;
         }
-        string actualName = parts[0];  
-        ll size = stoll(parts[1]);    
-        FileInfo* requestedFile = searchFileInMatches(matches, actualName, size);
+        const string& actualName = parts[0];
+        const ll size = stoll(parts[1]);
+        const FileInfo* requestedFile = searchFileInMatches(matches, actualName, size);
         if (requestedFile == nullptr) { 
             rsp = "1";
             sendBytes(client_socket, rsp);
@@ -74,6 +73,6 @@ private:
         receiveAcknowledge(client_socket);
     }
 
-public: 
-    IndexServer(int port): TCPServer(port) {}
+public:
+    explicit IndexServer(const int port): TCPServer(port) {}
 };

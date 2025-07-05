@@ -1,37 +1,34 @@
 #pragma once
-#include "../../util.h"
-#include "../../common/server/TCPServer.cpp"
-#include "../../dto/FileRequestDTO.cpp"
+#include "util.h"
+#include "common/server/TCPServer.cpp"
+#include "dto/FileRequestDTO.cpp"
 #include "hash/FileReader.cpp"
-#include "../../logger/Logger.h"
+#include "logger/Logger.h"
 
-class PeerServer : public TCPServer {
-private:
+class PeerServer final : public TCPServer {
     string path;
     set<FileDTO> sharedFiles;
 
-    void handleClient(int peerSocket) override {
-        string rqst = readSingleBuffer(peerSocket);
+    void handleClient(const int peerSocket) override {
+        const string request = readSingleBuffer(peerSocket);
         logger.info("Client on socket: " + to_string(peerSocket));
-        if(rqst.size()) sendFilePart(peerSocket, FileRequestDTO::deserialize(rqst));
+        if(!request.empty()) sendFilePart(peerSocket, FileRequestDTO::deserialize(request));
     }
 
-    void sendFilePart(int peerSocket, FileRequestDTO request) {
-        string filePath = path + "/" + searchFile(request);
+    void sendFilePart(const int peerSocket, const FileRequestDTO &request) {
+        const string filePath = path + "/" + searchFile(request);
         FILE* file = fopen(filePath.c_str(), "rb");
         if (!file) {
             logger.error("Error opening file: " + filePath);
             return;
         }
-        fseek(file, request.startByte, SEEK_SET);
+        fseek(file, static_cast<long>(request.startByte), SEEK_SET);
         char buffer[BUFFER_SIZE];
-        ll leftBytes = request.chunkSize;
+        unsigned ll leftBytes = request.chunkSize;
         while (leftBytes > 0) {
-            size_t bytesToRead = min(leftBytes, static_cast<ll>(BUFFER_SIZE));
-            size_t bytesRead = fread(buffer, 1, bytesToRead, file);
-            if (bytesRead > 0) {
-                string data(buffer, bytesRead);
-                if(!sendBytes(peerSocket, data)) break;
+            const size_t bytesToRead = min(leftBytes, static_cast<unsigned ll>(BUFFER_SIZE));
+            if (const size_t bytesRead = fread(buffer, 1, bytesToRead, file); bytesRead > 0) {
+                if(string data(buffer, bytesRead); !sendBytes(peerSocket, data)) break;
                 leftBytes -= bytesRead;
             } else {
                 logger.error("Error reading from file or end of file.");
@@ -41,29 +38,29 @@ private:
         fclose(file);
     }
 
-    string searchFile(FileRequestDTO dto) {
-        auto it = sharedFiles.find(FileDTO{dto.hash1, dto.hash2, dto.size, ""});
+    string searchFile(const FileRequestDTO &dto) {
+        const auto it = sharedFiles.find(FileDTO{dto.hash1, dto.hash2, dto.size, ""});
         if(it == sharedFiles.end()) return "";  
         return it->fileName;  
     }
 
 public:
-
-    static int connectToServer(string serverIp, string serverPort) {
+    static int connectToServer(const string& serverIp, const string& serverPort) {
         logger.info("Establishing connection to " + serverIp + ":" + serverPort);
-        int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+        const int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
         if (serverSocket < 0) {
             logger.error("Error creating socket");
             return -1;
         }
-        ll bufferSize = BUFFER_SIZE;
+        constexpr
+        size_t bufferSize = BUFFER_SIZE;
         if (setsockopt(serverSocket, SOL_SOCKET, SO_RCVBUF, &bufferSize, sizeof(bufferSize)) < 0) 
             logger.warn("Error setting receive buffer size: " + string(strerror(errno)));
         
         if (setsockopt(serverSocket, SOL_SOCKET, SO_SNDBUF, &bufferSize, sizeof(bufferSize)) < 0)
             logger.warn("Error setting send buffer size: " + string(strerror(errno)));
         
-        sockaddr_in serverAddress;
+        sockaddr_in serverAddress{};
         serverAddress.sin_family = AF_INET;
         serverAddress.sin_port = htons(stoi(serverPort));
         if (inet_pton(AF_INET, serverIp.c_str(), &serverAddress.sin_addr) <= 0) {
@@ -71,7 +68,7 @@ public:
             close(serverSocket);
             return -1;
         }
-        if (connect(serverSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) < 0) {
+        if (connect(serverSocket, reinterpret_cast<sockaddr *>(&serverAddress), sizeof(serverAddress)) < 0) {
             logger.error("Error connecting to the server: " + string(strerror(errno)));
             close(serverSocket);
             return -1;
@@ -79,9 +76,8 @@ public:
         return serverSocket;
     }
 
-    PeerServer(int port, string &directory): TCPServer(port), path(directory) {
-        vector<FileDTO> list = fileDirectoryReader(directory);
-        for(auto &pf : list) sharedFiles.emplace(pf.hash1, pf.hash2, pf.size, pf.fileName);
+    PeerServer(const int port, const string &directory): TCPServer(port), path(directory) {
+        for(vector<FileDTO> list = fileDirectoryReader(directory); auto &pf : list) sharedFiles.emplace(pf.hash1, pf.hash2, pf.size, pf.fileName);
     }
 
 };

@@ -4,16 +4,16 @@
 
 struct NewPeerDTO {
     string ip;
-    int port;
+    int port{};
     vector<FileDTO> peerFiles;
     
-    string serialize() {
+    string serialize() const {
         string ser = ip + ',' + to_string(port);
         for(auto &p : peerFiles) ser += " " + p.serialize();
         return ser;
     }
 
-    static NewPeerDTO deserialize(string &data) {
+    static NewPeerDTO deserialize(const string &data) {
         NewPeerDTO peerDTO;
         istringstream ss(data);  
         string token;

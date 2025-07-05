@@ -1,13 +1,10 @@
 #pragma once
 #include <iostream>
-#include <netinet/in.h>
 #include "../util.h"
-#include "../logger/Logger.h"
 
 struct PeerFileInfoDTO {
-
     string ip, filename;
-    int port;
+    int port{};
 
     string serialize() const {
         return filename + ',' + ip + ',' + to_string(port);  

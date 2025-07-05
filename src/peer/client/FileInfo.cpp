@@ -1,19 +1,18 @@
 #pragma once
 #include <iostream>
-#include <vector>
-#include "../../dto/PeerFileInfoDTO.cpp"
-#include "../../common/fileinfo/CommonFileInfo.h"
+#include "dto/PeerFileInfoDTO.cpp"
+#include "common/fileinfo/CommonFileInfo.h"
 using namespace std;
 
-class FileInfo : public CommonFileInfo<FileInfo> {
+class FileInfo final : public CommonFileInfo<FileInfo> {
 public:
-    FileInfo(ll h1, ll h2, ll sz) : CommonFileInfo<FileInfo>(h1, h2, sz) {} 
-    FileInfo(ll h1, ll h2, ll sz, PeerFileInfoDTO info) : CommonFileInfo<FileInfo>(h1, h2, sz, info) {}
+    FileInfo(const ll h1, const ll h2, const ll sz) : CommonFileInfo(h1, h2, sz) {}
+    FileInfo(const ll h1, const ll h2, const ll sz, const PeerFileInfoDTO &info) : CommonFileInfo(h1, h2, sz, info) {}
 
     set<PeerFileInfoDTO> getFileInfo() { return fileInfo; }
-    ll getNumberOfPeersWithFile() const { return fileInfo.size(); }
+    size_t getNumberOfPeersWithFile() const { return fileInfo.size(); }
 
-    string findMatch(string alias) override {
+    string findMatch(const string alias) override {
         for(auto &pfi : fileInfo) if(pfi.filename == alias) return pfi.filename;
         return "";
     }     

@@ -4,36 +4,25 @@
 #include <thread>
 #include <string>
 #include <sstream>
-#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-#include <thread>
-#include <utility>
 #include <fstream>
 #include <vector>
 #include <sys/socket.h>
-#include <stdlib.h>
 #include <cstring>
-#include <stdarg.h>
-#include <limits>
-#include <cstdlib>
-#include <netdb.h>
-#include <sstream>
-#include <algorithm> 
-#include <cctype>
+#include <algorithm>
 #include <set>
-#include <mutex>
 #include <iomanip>
 #include "logger/Logger.h"
 
-#define BUFFER_SIZE (1<<10)
+#define BUFFER_SIZE static_cast<size_t>(1<<10)
 #define ll long long
 #define uchar unsigned char
 using namespace std;
 
-inline string readSingleBuffer(int socket) {
+inline string readSingleBuffer(const int socket) {
     char buffer[BUFFER_SIZE] = {};
-    ssize_t bytesRead = recv(socket, buffer, BUFFER_SIZE, 0);
+    const ssize_t bytesRead = recv(socket, buffer, BUFFER_SIZE, 0);
     if (bytesRead < 0) {
         logger.error("Error in readSingleBuffer: " + string(strerror(errno)));
         return "";
@@ -41,12 +30,12 @@ inline string readSingleBuffer(int socket) {
     return string(buffer, bytesRead);
 }
 
-inline string readBytes(int socket, int bufferSize) {
+inline string readBytes(const int socket, const size_t bufferSize) {
     string info;
     info.resize(bufferSize);  
-    ll totalBytesRead = 0;
+    size_t totalBytesRead = 0;
     while (totalBytesRead < bufferSize) {
-        ssize_t bytesRead = recv(socket, &info[totalBytesRead], bufferSize - totalBytesRead, 0);
+        const ssize_t bytesRead = recv(socket, &info[totalBytesRead], bufferSize - totalBytesRead, 0);
         if (bytesRead < 0) {
             logger.error("Error in readBytes: " + string(strerror(errno)));
             return "";  
@@ -58,12 +47,12 @@ inline string readBytes(int socket, int bufferSize) {
     return info;
 }
 
-inline bool sendBytes(int socket, string& buffer) {
-    ll totalBytesSent = 0;
-    ll bufferSize = buffer.size();
+inline bool sendBytes(const int socket, const string& buffer) {
+    size_t totalBytesSent = 0;
+    const size_t bufferSize = buffer.size();
     while (totalBytesSent < bufferSize) {
-        ssize_t bytesToSend = min(bufferSize - totalBytesSent, static_cast<ll>(BUFFER_SIZE));
-        ssize_t bytesSent = send(socket, &buffer[totalBytesSent], bytesToSend, 0);
+        const ssize_t bytesToSend = min(bufferSize - totalBytesSent, BUFFER_SIZE);
+        const ssize_t bytesSent = send(socket, &buffer[totalBytesSent], bytesToSend, 0);
         if (bytesSent < 0) {
             logger.error("Error in sendBytes: " + string(strerror(errno)));
             return false;
@@ -73,22 +62,22 @@ inline bool sendBytes(int socket, string& buffer) {
     return true;
 }
 
-inline void sendAcknowledge(int socket) {
+inline void sendAcknowledge(const int socket) {
     const string ack = "ACK";
     send(socket, ack.c_str(), ack.size(), 0);
 }
 
-inline bool receiveAcknowledge(int socket) {
+inline bool receiveAcknowledge(const int socket) {
     const string ack = "ACK";
     return readBytes(socket, ack.size()) == ack;
 }
 
 inline string toLower(string s) {
-    transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return tolower(c); });
+    ranges::transform(s, s.begin(), [](const unsigned char c) { return tolower(c); });
     return s;
 }
 
-inline vector<string> split(const string& input, char delimiter) {
+inline vector<string> split(const string& input, const char delimiter) {
     vector<string> result;
     stringstream ss(input);
     string item;

@@ -1,8 +1,8 @@
-#include "../util.h"
+#include "util.h"
 #include "server/AddPeer.cpp"
-#include "../logger/Logger.h"
+#include "logger/Logger.h"
 
-int main(int argc, char const *argv[]) {
+int main(const int argc, char const *argv[]) {
     if (argc < 6) {  
         logger.error("Usage: " + string(argv[0]) + " <port> <indexIp> <indexPort> <directory>");
         return -1;

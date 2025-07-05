@@ -1,32 +1,30 @@
 #pragma once
-#include "../file/FileInfo.cpp"
-#include "../../dto/NewPeerDTO.cpp"
-#include "../../dto/PeerFileInfoDTO.cpp"
+#include "index/file/FileInfo.cpp"
+#include "dto/NewPeerDTO.cpp"
+#include "dto/PeerFileInfoDTO.cpp"
 #include <iostream>
 #include <map>
 #include <memory>
+#include <ranges>
 
 class FileIndex {
-private:
     map<FileInfo, shared_ptr<FileInfo>> info;
 public:
     FileIndex() {}
 
-    vector<pair<string, FileInfo*>> find(string alias){
+    vector<pair<string, FileInfo*>> find(const string& alias) const {
         vector<pair<string, FileInfo*>> rs;
-        for (auto &p : info) {
-            string match = p.second->findMatch(alias);
-            if(match != "") rs.emplace_back(match, p.second.get());
+        for (const auto &val: info | views::values) {
+            if(string match = val->findMatch(alias); !match.empty()) rs.emplace_back(match, val.get());
         }
         return rs;
     } 
 
-    void addPeer(NewPeerDTO peer) {
+    void addPeer(const NewPeerDTO& peer) {
         for (auto &pfs : peer.peerFiles) {
             FileInfo fileInfo(pfs.hash1, pfs.hash2, pfs.size);
             PeerFileInfoDTO peerFileInfo{peer.ip, pfs.fileName, peer.port};
-            auto it = info.find(fileInfo);
-            if (it!=info.end()) {
+            if (auto it = info.find(fileInfo); it!=info.end()) {
                 it->second->knownAs(peerFileInfo);
                 continue;
             }

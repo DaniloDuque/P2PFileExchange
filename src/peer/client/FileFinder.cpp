@@ -1,17 +1,17 @@
-#include "../../util.h"
-#include "../server/PeerServer.cpp"
+#include "util.h"
+#include "peer/server/PeerServer.cpp"
 #include "FileInfo.cpp"
-#include "../../logger/Logger.h"
+#include "logger/Logger.h"
 
-pair<string, string> requestChosenFile(int indexSocket, string &fileName){
-    string package = "2 " + fileName;
+pair<string, string> requestChosenFile(const int indexSocket, const string &fileName){
+    const string package = "2 " + fileName;
     if (send(indexSocket, package.c_str(), package.size(), 0) < 0) {
         logger.error("Error sending the package");
         close(indexSocket);
         return {"", ""};
     }
     logger.info("File info requested!");
-    string info = readSingleBuffer(indexSocket);
+    const string info = readSingleBuffer(indexSocket);
     if(info=="1") return {"1", ""};
     printFileInfoTable(info.substr(2, info.size()));
     string name;
@@ -19,31 +19,31 @@ pair<string, string> requestChosenFile(int indexSocket, string &fileName){
     cout<<"Insert file name and file size: ";
     cin>>name>>size;
     cout<<endl;
-    string rsp = name + ' ' + to_string(size);
+    const string rsp = name + ' ' + to_string(size);
     sendBytes(indexSocket, rsp);
-    string rslt = readSingleBuffer(indexSocket);
-    if(rslt.empty() || rslt == "1") return {"1", ""};
+    string result = readSingleBuffer(indexSocket);
+    if(result.empty() || result == "1") return {"1", ""};
     sendAcknowledge(indexSocket);
-    return {rslt, name};
+    return {result, name};
 }
 
-pair<string, string> getFileInfo(int indexSocket, string &fileName){
+pair<string, string> getFileInfo(const int indexSocket, const string &fileName){
     pair<string, string> info = requestChosenFile(indexSocket, fileName);
     close(indexSocket);
     return info;
 }
 
-void requestFileChunk(FileRequestDTO fileInfo, PeerFileInfoDTO peerInfo, string name) {
-    int peerSocket = PeerServer::connectToServer(peerInfo.ip, to_string(peerInfo.port));
-    string finfo = fileInfo.serialize();
+void requestFileChunk(const FileRequestDTO &fileInfo, const PeerFileInfoDTO& peerInfo, const string& name) {
+    const int peerSocket = PeerServer::connectToServer(peerInfo.ip, to_string(peerInfo.port));
+    const string finfo = fileInfo.serialize();
     sendBytes(peerSocket, finfo);
     FILE* file = fopen(name.c_str(), "wb");
     ll bytesRead = 0;
     char buffer[BUFFER_SIZE];  
     while (bytesRead < fileInfo.chunkSize) {
         logger.info("Bytes read: " + to_string(bytesRead));
-        size_t bytesToReceive = min(fileInfo.chunkSize - bytesRead, static_cast<ll>(BUFFER_SIZE));
-        ssize_t bytesReceived = read(peerSocket, buffer, bytesToReceive);
+        const ll bytesToReceive = min(fileInfo.chunkSize - bytesRead, static_cast<ll>(BUFFER_SIZE));
+        const ssize_t bytesReceived = read(peerSocket, buffer, bytesToReceive);
         if (bytesReceived < 0) {
             logger.error("Error receiving data from socket: " + string(strerror(errno)));
             fclose(file);
@@ -61,12 +61,12 @@ void requestFileChunk(FileRequestDTO fileInfo, PeerFileInfoDTO peerInfo, string 
 }
 
 void requestFile(FileInfo fileInfo, string &dir) {
-    ll numPeers = fileInfo.getNumberOfPeersWithFile();
-    ll chunkSize = fileInfo.getSize() / numPeers;
+    const ll numPeers = fileInfo.getNumberOfPeersWithFile();
+    const ll chunkSize = fileInfo.getSize() / numPeers;
     ll startByte = 0, i = 0, mod = fileInfo.getSize() % numPeers;
     vector<thread> threads;
     for(auto &pfi : fileInfo.getFileInfo()){
-        threads.emplace_back([=, &dir]() {
+        threads.emplace_back([=, &dir] {
             requestFileChunk(FileRequestDTO{fileInfo.getHash1(), fileInfo.getHash2(), fileInfo.getSize(), startByte, chunkSize + (mod > 0)}, pfi, dir+"/"+to_string(i));
         });
         i++; startByte += chunkSize + (mod > 0); mod--;
@@ -76,13 +76,13 @@ void requestFile(FileInfo fileInfo, string &dir) {
     }
 }
 
-void downloadFile(FileInfo fileInfo, string directory, string fileName) {
+void downloadFile(const FileInfo &fileInfo, string directory, const string& fileName) {
     requestFile(fileInfo, directory);
     const filesystem::path sandbox{directory};
     FILE* file = fopen(fileName.c_str(), "wb");
     vector<filesystem::path> files;
     for (auto& dirEntry : filesystem::directory_iterator{sandbox}) files.push_back(dirEntry.path());
-    sort(files.begin(), files.end());
+    ranges::sort(files);
     for (const auto& filePath : files) {
         FILE* cub = fopen(filePath.c_str(), "rb");
         if (!cub) {
