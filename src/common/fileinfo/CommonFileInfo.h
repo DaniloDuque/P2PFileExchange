@@ -35,7 +35,7 @@ public:
         if (hash2 != other.hash2) return hash2 < other.hash2;
         return size < other.size;
     }
-
+    
     string serialize() const {
         string rsp = to_string(hash1) + ',' + to_string(hash2) + ',' + to_string(size); 
         for(auto &pf : fileInfo) rsp += " " + pf.serialize();

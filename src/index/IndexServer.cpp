@@ -4,12 +4,15 @@
 #include "index/fileindex/FileIndex.cpp"
 #include "index/file/FileInfo.cpp"
 #include "dto/NewPeerDTO.cpp"
+#include "heartbeat/HeartbeatManager.cpp"
 
 class IndexServer final : public TCPServer {
     FileIndex index;
+    HeartbeatManager heartbeat;
 
     void addPeer(const NewPeerDTO& dto) {
         index.addPeer(dto);
+        heartbeat.updatePeer(dto.ip, dto.port);
     }
 
     vector<pair<string, FileInfo*>> findMatches(const string& alias) const {
@@ -75,4 +78,16 @@ class IndexServer final : public TCPServer {
 
 public:
     explicit IndexServer(const int port): TCPServer(port) {}
+    
+    void run() override {
+        heartbeat.setDeadPeerCallback([this](const string& ip, const int port) {
+            index.removePeer(ip, port);
+        });
+        heartbeat.start();
+        TCPServer::run();
+    }
+    
+    ~IndexServer() override {
+        heartbeat.stop();
+    }
 };

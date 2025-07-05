@@ -31,4 +31,15 @@ public:
             info[fileInfo] = make_shared<FileInfo>(pfs.hash1, pfs.hash2, pfs.size, peerFileInfo);
         }
     }
+    
+    void removePeer(const string& ip, const int port) {
+        for (auto it = info.begin(); it != info.end();) {
+            it->second->removePeer(ip, port);
+            if (it->second->isEmpty()) {
+                it = info.erase(it);
+            } else {
+                ++it;
+            }
+        }
+    }
 };

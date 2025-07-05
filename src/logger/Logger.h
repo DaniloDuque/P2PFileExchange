@@ -1,8 +1,10 @@
 #pragma once
 #include <string>
+#include <mutex>
 using namespace std;
 
 class Logger {
+    mutable mutex outputMutex;
 public:
     void warn(const string&) const;
     void info(const string&) const;

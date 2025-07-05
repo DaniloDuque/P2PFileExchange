@@ -52,5 +52,19 @@ public:
                 return pfi.filename;
         return "";
     }
+    
+    void removePeer(const string& ip, int port) {
+        for (auto it = fileInfo.begin(); it != fileInfo.end();) {
+            if (it->ip == ip && it->port == port) {
+                it = fileInfo.erase(it);
+            } else {
+                ++it;
+            }
+        }
+    }
+    
+    bool isEmpty() const {
+        return fileInfo.empty();
+    }
 
 };
