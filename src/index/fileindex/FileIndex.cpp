@@ -1,13 +1,12 @@
 #pragma once
 #include "../file/FileInfo.cpp"
-#include "../file/PeerFileInfo.cpp"
-#include "../dto/NewPeerDTO.cpp"
+#include "../../dto/NewPeerDTO.cpp"
+#include "../../dto/PeerFileInfoDTO.cpp"
 #include <iostream>
 #include <map>
 #include <memory>
 
 class FileIndex {
-
 private:
     map<FileInfo, shared_ptr<FileInfo>> info;
 public:
@@ -25,7 +24,7 @@ public:
     void addPeer(NewPeerDTO peer) {
         for (auto &pfs : peer.peerFiles) {
             FileInfo fileInfo(pfs.hash1, pfs.hash2, pfs.size);
-            PeerFileInfo peerFileInfo{peer.ip, pfs.fileName, peer.port};
+            PeerFileInfoDTO peerFileInfo{peer.ip, pfs.fileName, peer.port};
             auto it = info.find(fileInfo);
             if (it!=info.end()) {
                 it->second->knownAs(peerFileInfo);

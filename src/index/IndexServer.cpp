@@ -1,9 +1,9 @@
 #pragma once
 #include "../util.h"
-#include "../common/TCPServer.cpp"
+#include "../common/server/TCPServer.cpp"
 #include "fileindex/FileIndex.cpp"
 #include "file/FileInfo.cpp"
-#include "dto/NewPeerDTO.cpp"
+#include "../dto/NewPeerDTO.cpp"
 
 class IndexServer : public TCPServer {
 private:

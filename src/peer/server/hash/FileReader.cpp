@@ -2,7 +2,7 @@
 #include <iostream>
 #include <utility>
 #include "HashGenerator.h"
-#include "../../dto/FileDTO.cpp"
+#include "../../../dto/FileDTO.cpp"
 #include "../../../logger/Logger.h"
 using namespace std;
 

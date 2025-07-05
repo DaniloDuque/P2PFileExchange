@@ -1,7 +1,7 @@
 #pragma once
 #include "../../util.h"
-#include "../../common/TCPServer.cpp"
-#include "../dto/FileRequestDTO.cpp"
+#include "../../common/server/TCPServer.cpp"
+#include "../../dto/FileRequestDTO.cpp"
 #include "hash/FileReader.cpp"
 #include "../../logger/Logger.h"
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "../dto/NewPeerDTO.cpp"
+#include "../../dto/NewPeerDTO.cpp"
 #include "PeerServer.cpp"
 #include "../../logger/Logger.h"
 
