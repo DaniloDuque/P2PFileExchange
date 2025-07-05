@@ -4,7 +4,16 @@
 #include "../../logger/Logger.h"
 
 void addPeer(string &port, string &ip, string &indexIp, string &indexPort, string &directory) {
-    int clientSocket = PeerServer::connectToServer(indexIp, indexPort);
+    int clientSocket = -1;
+    for(int i = 0; i < 5; i++) {
+        clientSocket = PeerServer::connectToServer(indexIp, indexPort);
+        if(clientSocket >= 0) break;
+        this_thread::sleep_for(chrono::milliseconds(200));
+    }
+    if (clientSocket < 0) {
+        logger.error("Failed to connect to index server after retries");
+        return;
+    }
     NewPeerDTO dto;
     dto.ip = ip;
     dto.port = stoi(port);

@@ -42,9 +42,10 @@ private:
     }
 
     void handleAddPeer(string request) {
+        logger.info("New Peer registration started");
         NewPeerDTO peerFiles = NewPeerDTO::deserialize(request);
         addPeer(peerFiles);
-        logger.info("Peer registration completed - " + peerFiles.ip + ":" + to_string(peerFiles.port) + " added to index");
+        logger.info("New Peer registration completed - " + peerFiles.ip + ":" + to_string(peerFiles.port) + " added to index");
     }
 
     void handleFileRequest(string filename, int client_socket) {

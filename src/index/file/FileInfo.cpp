@@ -89,13 +89,14 @@ public:
         return newFileInfo;
     }
 
-    bool operator == (const FileInfo& other) const {
-        if (hash1 != other.hash1) return hash1 < other.hash1;
-        if (hash2 != other.hash2) return hash2 < other.hash2;
-        return size < other.size; 
+    bool operator==(const FileInfo& other) const {
+        return hash1 == other.hash1 && hash2 == other.hash2 && size == other.size;
     }
 
     bool operator<(const FileInfo& other) const {
-        return hash1 == other.hash1 && hash2 == other.hash2 && size == other.size;
+        if (hash1 != other.hash1) return hash1 < other.hash1;
+        if (hash2 != other.hash2) return hash2 < other.hash2;
+        return size < other.size;
     }
+
 };

@@ -24,6 +24,7 @@
 #include <set>
 #include <mutex>
 #include <iomanip>
+#include "logger/Logger.h"
 
 #define BUFFER_SIZE (1<<10)
 #define ll long long
@@ -34,7 +35,7 @@ inline string readSingleBuffer(int socket) {
     char buffer[BUFFER_SIZE] = {};
     ssize_t bytesRead = recv(socket, buffer, BUFFER_SIZE, 0);
     if (bytesRead < 0) {
-        cerr << "Error in readSingleBuffer: " << strerror(errno) << endl;
+        logger.error("Error in readSingleBuffer: " + string(strerror(errno)));
         return "";
     }
     return string(buffer, bytesRead);
@@ -47,7 +48,7 @@ inline string readBytes(int socket, int bufferSize) {
     while (totalBytesRead < bufferSize) {
         ssize_t bytesRead = recv(socket, &info[totalBytesRead], bufferSize - totalBytesRead, 0);
         if (bytesRead < 0) {
-            cerr << "Error in readBytes: " << strerror(errno) << endl;
+            logger.error("Error in readBytes: " + string(strerror(errno)));
             return "";  
         }
         if (bytesRead == 0) break;  
@@ -64,7 +65,7 @@ inline bool sendBytes(int socket, string& buffer) {
         ssize_t bytesToSend = min(bufferSize - totalBytesSent, static_cast<ll>(BUFFER_SIZE));
         ssize_t bytesSent = send(socket, &buffer[totalBytesSent], bytesToSend, 0);
         if (bytesSent < 0) {
-            cerr << "Error in sendBytes: " << strerror(errno) << endl;
+            logger.error("Error in sendBytes: " + string(strerror(errno)));
             return false;
         }
         totalBytesSent += bytesSent;

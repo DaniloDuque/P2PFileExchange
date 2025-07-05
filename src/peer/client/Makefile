@@ -1,9 +1,9 @@
-SRC = FileFinder.cpp
+SRC = FileFinder.cpp ../../logger/ConsoleLogger.cpp
 
 EXEC = a.out
 
 CC = g++
-CFLAGS = -Wall -Wextra
+CFLAGS = -Wall -Wextra -std=c++20
 
 all: $(EXEC)
 
@@ -11,7 +11,7 @@ $(EXEC): $(SRC)
 	$(CC) $(CFLAGS) -o $(EXEC) $(SRC) -lm
 
 run: $(EXEC)
-	./$(EXEC) 8484 192.168.100.8 8585 . saved 
+	./$(EXEC) 8080 127.0.0.1 8585 a saved
 
 clean:
 	rm -f $(EXEC)

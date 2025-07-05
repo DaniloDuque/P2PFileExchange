@@ -37,7 +37,7 @@ public:
         return rsp;
     }    
 
-    FileInfo deserialize(const string& data) {
+    static FileInfo deserialize(const string& data) {
         istringstream ss(data);
         string token;
         getline(ss, token, ',');
@@ -54,13 +54,14 @@ public:
         return newFileInfo;
     }    
 
-    bool operator==(const FileInfo& other) const {
+    bool operator == (const FileInfo& other) const {
         return hash1 == other.hash1 && hash2 == other.hash2 && size == other.size;
     }
 
     bool operator<(const FileInfo& other) const {
-        if(size < other.getSize()) return 1;
-        if(hash1 < other.getHash1()) return 1;
-        return hash2 < other.getHash2();
+        if (hash1 != other.hash1) return hash1 < other.hash1;
+        if (hash2 != other.hash2) return hash2 < other.hash2;
+        return size < other.size;
     }
+
 };

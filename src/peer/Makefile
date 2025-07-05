@@ -11,10 +11,10 @@ $(EXEC): $(SRC)
 	$(CC) $(CFLAGS) -o $(EXEC) $(SRC) -lm
 
 run: $(EXEC)
-	./$(EXEC) 8989 192.168.100.8 192.168.100.8 8585 ../../shared/Peer1 
+	./$(EXEC) 8989 127.0.0.1 127.0.0.1 8585 ../../shared/Peer1
 
 clean:
-	rm -f $(EXEC)
+	rm -f $(EXEC) 
 
 help:
 	@echo "Available commands:"

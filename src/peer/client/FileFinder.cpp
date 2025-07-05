@@ -1,5 +1,5 @@
-#include "../util.h"
-#include "../PeerServer/FileExchange/PeerServer.h"
+#include "../../util.h"
+#include "../server/PeerServer.cpp"
 #include "FileInfo.cpp"
 #include "../../logger/Logger.h"
 
@@ -33,8 +33,8 @@ pair<string, string> getFileInfo(int indexSocket, string &fileName){
     return info;
 }
 
-void requestFileChunk(FileRequestDTO<ll> fileInfo, PeerFileInfo peerInfo, string name) {
-    int peerSocket = PeerServer<ll>::connectToServer(peerInfo.ip, to_string(peerInfo.port));
+void requestFileChunk(FileRequestDTO fileInfo, PeerFileInfoDTO peerInfo, string name) {
+    int peerSocket = PeerServer::connectToServer(peerInfo.ip, to_string(peerInfo.port));
     string finfo = fileInfo.serialize();
     sendBytes(peerSocket, finfo);
     FILE* file = fopen(name.c_str(), "wb");
@@ -60,14 +60,14 @@ void requestFileChunk(FileRequestDTO<ll> fileInfo, PeerFileInfo peerInfo, string
     fclose(file); close(peerSocket);
 }
 
-void requestFile(FileInfo<ll> fileInfo, string &dir) {
+void requestFile(FileInfo fileInfo, string &dir) {
     ll numPeers = fileInfo.getNumberOfPeersWithFile();
     ll chunkSize = fileInfo.getSize() / numPeers;
     ll startByte = 0, i = 0, mod = fileInfo.getSize() % numPeers;
     vector<thread> threads;
     for(auto &pfi : fileInfo.getFileInfo()){
-        threads.emplace_back([&, i, startByte, chunkSize, mod]() {
-            requestFileChunk(FileRequestDTO<ll>{fileInfo.getHash1(), fileInfo.getHash2(), fileInfo.getSize(), startByte, chunkSize + (mod > 0)}, pfi, dir+"/"+to_string(i));
+        threads.emplace_back([=, &dir]() {
+            requestFileChunk(FileRequestDTO{fileInfo.getHash1(), fileInfo.getHash2(), fileInfo.getSize(), startByte, chunkSize + (mod > 0)}, pfi, dir+"/"+to_string(i));
         });
         i++; startByte += chunkSize + (mod > 0); mod--;
     }
@@ -76,7 +76,7 @@ void requestFile(FileInfo<ll> fileInfo, string &dir) {
     }
 }
 
-void downloadFile(FileInfo<ll> fileInfo, string directory, string fileName) {
+void downloadFile(FileInfo fileInfo, string directory, string fileName) {
     requestFile(fileInfo, directory);
     const filesystem::path sandbox{directory};
     FILE* file = fopen(fileName.c_str(), "wb");
@@ -86,7 +86,7 @@ void downloadFile(FileInfo<ll> fileInfo, string directory, string fileName) {
     for (const auto& filePath : files) {
         FILE* cub = fopen(filePath.c_str(), "rb");
         if (!cub) {
-            logger.error("Error opening chunk file: " + filePath);
+            logger.error("Error opening chunk file: " + string(filePath));
             fclose(file);
             return;
         }
@@ -109,11 +109,11 @@ int main(int argc, char const *argv[]) {
         return -1;
     }
     string mainPort=argv[1], indexIp=argv[2], indexPort=argv[3], fileName=argv[4], directory=argv[5];
-    int indexSocket = PeerServer<ll>::connectToServer(indexIp, indexPort);
+    int indexSocket = PeerServer::connectToServer(indexIp, indexPort);
     auto [finfo, actualFileName] = getFileInfo(indexSocket, fileName);
     if(finfo.empty()) {logger.error("Bad Response from index"); return -1;}
     if(finfo[0]!='0') {logger.error("Requested file not found in the network"); return 0;}
-    FileInfo<ll> info = FileInfo<ll>::deserialize(finfo.substr(2, finfo.size()));
+    FileInfo info = FileInfo::deserialize(finfo.substr(2, finfo.size()));
     downloadFile(info, directory, actualFileName);
     return 0;
 }

@@ -1,5 +1,6 @@
 #pragma once
-#include "../util.h"
+#include <string>
+using namespace std;
 
 class Logger {
 public:

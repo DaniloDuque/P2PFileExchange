@@ -2,6 +2,7 @@
 #include <iostream>
 #include <netinet/in.h>
 #include "../../util.h"
+#include "../../logger/Logger.h"
 
 struct PeerFileInfoDTO {
 
