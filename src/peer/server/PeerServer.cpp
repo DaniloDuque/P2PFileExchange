@@ -22,7 +22,7 @@ class PeerServer final : public TCPServer {
             logger.error("Error opening file: " + filePath);
             return;
         }
-        fseek(file, static_cast<long>(request.startByte), SEEK_SET);
+        fseek(file, request.startByte, SEEK_SET);
         char buffer[BUFFER_SIZE];
         unsigned ll leftBytes = request.chunkSize;
         while (leftBytes > 0) {

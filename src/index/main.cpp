@@ -1,4 +1,4 @@
-#include "IndexServer.cpp"
+#include "server/IndexServer.cpp"
 #include "util.h"
 #include "logger/Logger.h"
 

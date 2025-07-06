@@ -47,6 +47,7 @@ public:
     FileInfo(const ll h1, const ll h2, const ll sz, const PeerFileInfoDTO& info) : CommonFileInfo(h1, h2, sz, info) {}
     
     string findMatch(const string alias) override {
+        shared_lock lock(infoMutex);
         for(auto &pfi : fileInfo) 
             if(KMPIsSubstring(pfi.filename, alias))
                 return pfi.filename;
@@ -54,6 +55,7 @@ public:
     }
     
     void removePeer(const string& ip, int port) {
+        unique_lock lock(infoMutex);
         for (auto it = fileInfo.begin(); it != fileInfo.end();) {
             if (it->ip == ip && it->port == port) {
                 it = fileInfo.erase(it);
@@ -64,6 +66,7 @@ public:
     }
     
     bool isEmpty() const {
+        shared_lock lock(infoMutex);
         return fileInfo.empty();
     }
 

@@ -60,14 +60,17 @@ void requestFileChunk(const FileRequestDTO &fileInfo, const PeerFileInfoDTO& pee
     fclose(file); close(peerSocket);
 }
 
-void requestFile(FileInfo fileInfo, string &dir) {
+void requestFile(FileInfo &fileInfo, string &dir) {
     const ll numPeers = fileInfo.getNumberOfPeersWithFile();
     const ll chunkSize = fileInfo.getSize() / numPeers;
     ll startByte = 0, i = 0, mod = fileInfo.getSize() % numPeers;
     vector<thread> threads;
     for(auto &pfi : fileInfo.getFileInfo()){
+        const ll hash1 = fileInfo.getHash1();
+        const ll hash2 = fileInfo.getHash2();
+        const ll size = fileInfo.getSize();
         threads.emplace_back([=, &dir] {
-            requestFileChunk(FileRequestDTO{fileInfo.getHash1(), fileInfo.getHash2(), fileInfo.getSize(), startByte, chunkSize + (mod > 0)}, pfi, dir+"/"+to_string(i));
+            requestFileChunk(FileRequestDTO{hash1, hash2, size, startByte, chunkSize + (mod > 0)}, pfi, dir+"/"+to_string(i));
         });
         i++; startByte += chunkSize + (mod > 0); mod--;
     }
@@ -76,7 +79,7 @@ void requestFile(FileInfo fileInfo, string &dir) {
     }
 }
 
-void downloadFile(const FileInfo &fileInfo, string directory, const string& fileName) {
+void downloadFile(FileInfo &fileInfo, string &directory, const string &fileName) {
     requestFile(fileInfo, directory);
     const filesystem::path sandbox{directory};
     FILE* file = fopen(fileName.c_str(), "wb");
@@ -113,7 +116,7 @@ int main(int argc, char const *argv[]) {
     auto [finfo, actualFileName] = getFileInfo(indexSocket, fileName);
     if(finfo.empty()) {logger.error("Bad Response from index"); return -1;}
     if(finfo[0]!='0') {logger.error("Requested file not found in the network"); return 0;}
-    FileInfo info = FileInfo::deserialize(finfo.substr(2, finfo.size()));
-    downloadFile(info, directory, actualFileName);
+    auto info = FileInfo::deserialize(finfo.substr(2, finfo.size()));
+    downloadFile(*info, directory, actualFileName);
     return 0;
 }
