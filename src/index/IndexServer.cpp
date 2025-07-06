@@ -4,6 +4,7 @@
 #include "index/fileindex/FileIndex.cpp"
 #include "index/file/FileInfo.cpp"
 #include "dto/NewPeerDTO.cpp"
+#include "dto/RemovePeerDTO.cpp"
 #include "heartbeat/HeartbeatManager.cpp"
 
 class IndexServer final : public TCPServer {
@@ -38,16 +39,23 @@ class IndexServer final : public TCPServer {
         logger.info("Request received!");
         const string request = toLower(readSingleBuffer(client_socket));
         if(request.empty()) return;
-        if(request[0]=='1') handleAddPeer(request.substr(2, request.size()));
-        if(request[0]=='2') handleFileRequest(request.substr(2, request.size()), client_socket);
+        const auto data = request.substr(2, request.size());
+        if (request[0]=='1') handleAddPeer(data);
+        if (request[0]=='2') handleFileRequest(data, client_socket);
+        if (request[0]=='3') handleRemovePeer(data);
         close(client_socket);
     }
 
+    void handleRemovePeer(const string& request) {
+        const auto [ip, port] = RemovePeerDTO::deserialize(request);
+        logger.info("Peer removal started - " + ip + ":" + to_string(port));
+        heartbeat.removePeer(ip, port);
+    }
+
     void handleAddPeer(const string& request) {
-        logger.info("New Peer registration started");
         const NewPeerDTO peerFiles = NewPeerDTO::deserialize(request);
+        logger.info("New Peer indexing started - "  + peerFiles.ip + ":" + to_string(peerFiles.port));
         addPeer(peerFiles);
-        logger.info("New Peer registration completed - " + peerFiles.ip + ":" + to_string(peerFiles.port) + " added to index");
     }
 
     void handleFileRequest(const string& filename, const int client_socket) const {

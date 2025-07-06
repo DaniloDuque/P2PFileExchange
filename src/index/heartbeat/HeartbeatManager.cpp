@@ -90,6 +90,13 @@ public:
         peerLastSeen[{ip, port}] = chrono::steady_clock::now();
     }
 
+    void removePeer(const string& ip, int port) {
+        lock_guard lock(peerMutex);
+        peerLastSeen.erase({ip, port});
+        if (onPeerDead) onPeerDead(ip, port);
+        logger.info("Removed stoped peer: " + ip + ":" + to_string(port));
+    }
+
     set<pair<string, int>> getAlivePeers() const {
         lock_guard lock(peerMutex);
         set<pair<string, int>> alive;

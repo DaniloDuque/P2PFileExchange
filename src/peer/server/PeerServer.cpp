@@ -2,7 +2,7 @@
 #include "util.h"
 #include "common/server/TCPServer.cpp"
 #include "dto/FileRequestDTO.cpp"
-#include "hash/FileReader.cpp"
+#include "FileReader.cpp"
 #include "logger/Logger.h"
 
 class PeerServer final : public TCPServer {
