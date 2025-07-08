@@ -28,6 +28,7 @@ class FileIndex {
     mutable shared_mutex indexMutex;
 
 public:
+
     vector<pair<string, shared_ptr<FileInfo>>> find(const string& alias) const {
         shared_lock lock(indexMutex);
         vector<pair<string, shared_ptr<FileInfo>>> rs;
@@ -37,11 +38,20 @@ public:
         return rs;
     }
 
+    shared_ptr<FileInfo> find(const ll hash1, const ll hash2, const ll size) const {
+        shared_lock lock(indexMutex);
+        const Key key{hash1, hash2, size};
+        if (const auto it = info.find(key); it != info.end()) {
+            return it->second;
+        }
+        return nullptr;
+    }
+
     void addPeer(const NewPeerDTO& peer) {
         unique_lock lock(indexMutex);
         for (auto &pfs : peer.peerFiles) {
             Key key{pfs.hash1, pfs.hash2, pfs.size};
-            PeerFileInfoDTO peerFileInfo{peer.ip, pfs.fileName, peer.port};
+            PeerFileInfoDTO peerFileInfo{peer.ip, pfs.filename, peer.port};
             if (auto it = info.find(key); it!=info.end()) {
                 it->second->knownAs(peerFileInfo);
                 continue;

@@ -1,1 +1,0 @@
-/usr/bin/c++ -Wall -Wextra -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/peer_server.dir/src/peer/main.cpp.o CMakeFiles/peer_server.dir/src/logger/ConsoleLogger.cpp.o -o peer_server  -lm

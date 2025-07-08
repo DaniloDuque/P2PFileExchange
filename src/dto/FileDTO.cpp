@@ -3,13 +3,13 @@
 
 struct FileDTO {
     ll hash1{}, hash2{}, size{};
-    string fileName;
+    string filename;
 
     FileDTO() = default;
-    FileDTO(const ll h1, const ll h2, const ll sz, const string& alias) : hash1(h1), hash2(h2), size(sz), fileName(alias) {}
+    FileDTO(const ll h1, const ll h2, const ll sz, const string& alias) : hash1(h1), hash2(h2), size(sz), filename(alias) {}
 
     string serialize() const {
-        return to_string(hash1) + ',' + to_string(hash2) + ',' + to_string(size) + ',' + fileName;
+        return to_string(hash1) + ',' + to_string(hash2) + ',' + to_string(size) + ',' + filename;
     }
 
     static FileDTO deserialize(const string &data) {
@@ -22,7 +22,7 @@ struct FileDTO {
         file.hash2 = stoll(token);
         getline(ss, token, ',');
         file.size = stoll(token);
-        getline(ss, file.fileName); 
+        getline(ss, file.filename);
         return file;
     }
 

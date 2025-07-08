@@ -25,3 +25,4 @@ constexpr string OK = "0";
 constexpr char ADD_PEER = '1';
 constexpr char FILE_REQUEST = '2';
 constexpr char REMOVE_PEER = '3';
+constexpr char FILE_SEARCH = '4';

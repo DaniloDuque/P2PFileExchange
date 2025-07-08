@@ -34,7 +34,7 @@ pair<string, string> getFileInfo(const int indexSocket, const string &fileName){
     return info;
 }
 
-void requestFileChunk(const FileRequestDTO &fileInfo, const PeerFileInfoDTO& peerInfo, const string& name) {
+void requestFileChunk(const DownloadFileDTO &fileInfo, const PeerFileInfoDTO& peerInfo, const string& name) {
     const int peerSocket = PeerServer::connectToServer(peerInfo.ip, to_string(peerInfo.port));
     const string finfo = fileInfo.serialize();
     sendBytes(peerSocket, finfo);
@@ -71,7 +71,7 @@ void requestFile(FileInfo &fileInfo, string &dir) {
         const ll hash2 = fileInfo.getHash2();
         const ll size = fileInfo.getSize();
         threads.emplace_back([=, &dir] {
-            requestFileChunk(FileRequestDTO{hash1, hash2, size, startByte, chunkSize + (mod > 0)}, pfi, dir+"/"+to_string(i));
+            requestFileChunk(DownloadFileDTO{hash1, hash2, size, startByte, chunkSize + (mod > 0)}, pfi, dir+"/"+to_string(i));
         });
         i++; startByte += chunkSize + (mod > 0); mod--;
     }

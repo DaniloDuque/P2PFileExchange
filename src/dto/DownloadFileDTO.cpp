@@ -1,7 +1,7 @@
 #pragma once
 #include "util.h"
 
-struct FileRequestDTO {
+struct DownloadFileDTO {
     ll hash1, hash2, size, startByte, chunkSize;
 
     string serialize() const {
@@ -9,8 +9,8 @@ struct FileRequestDTO {
                to_string(startByte) + ',' + to_string(chunkSize); 
     }
 
-    static FileRequestDTO deserialize(const string &data){
-        FileRequestDTO dto{};
+    static DownloadFileDTO deserialize(const string &data){
+        DownloadFileDTO dto{};
         istringstream ss(data);
         string token;
         getline(ss, token, ',');

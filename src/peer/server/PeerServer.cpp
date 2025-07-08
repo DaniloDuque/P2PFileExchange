@@ -1,7 +1,7 @@
 #pragma once
 #include "util.h"
 #include "common/server/TCPServer.cpp"
-#include "dto/FileRequestDTO.cpp"
+#include "dto/DownloadFileDTO.cpp"
 #include "FileReader.cpp"
 #include "logger/Logger.h"
 
@@ -12,10 +12,10 @@ class PeerServer final : public TCPServer {
     void handleClient(const int peerSocket) override {
         const string request = readSingleBuffer(peerSocket);
         logger.info("Client on socket: " + to_string(peerSocket));
-        if(!request.empty()) sendFilePart(peerSocket, FileRequestDTO::deserialize(request));
+        if(!request.empty()) sendFilePart(peerSocket, DownloadFileDTO::deserialize(request));
     }
 
-    void sendFilePart(const int peerSocket, const FileRequestDTO &request) {
+    void sendFilePart(const int peerSocket, const DownloadFileDTO &request) {
         const string filePath = path + "/" + searchFile(request);
         FILE* file = fopen(filePath.c_str(), "rb");
         if (!file) {
@@ -38,10 +38,10 @@ class PeerServer final : public TCPServer {
         fclose(file);
     }
 
-    string searchFile(const FileRequestDTO &dto) {
+    string searchFile(const DownloadFileDTO &dto) {
         const auto it = sharedFiles.find(FileDTO{dto.hash1, dto.hash2, dto.size, ""});
         if(it == sharedFiles.end()) return "";  
-        return it->fileName;  
+        return it->filename;
     }
 
 public:
@@ -77,7 +77,7 @@ public:
     }
 
     PeerServer(const int port, const string &directory): TCPServer(port), path(directory) {
-        for(vector<FileDTO> list = fileDirectoryReader(directory); auto &pf : list) sharedFiles.emplace(pf.hash1, pf.hash2, pf.size, pf.fileName);
+        for(vector<FileDTO> list = fileDirectoryReader(directory); auto &pf : list) sharedFiles.emplace(pf.hash1, pf.hash2, pf.size, pf.filename);
     }
 
 };
