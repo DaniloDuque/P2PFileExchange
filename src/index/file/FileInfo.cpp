@@ -54,14 +54,11 @@ public:
         return "";
     }
     
-    void removePeer(const string& ip, int port) {
+    void removePeer(const string& ip, const int port) {
         unique_lock lock(infoMutex);
         for (auto it = fileInfo.begin(); it != fileInfo.end();) {
-            if (it->ip == ip && it->port == port) {
-                it = fileInfo.erase(it);
-            } else {
-                ++it;
-            }
+            if (it->ip == ip && it->port == port) it = fileInfo.erase(it);
+            else ++it;
         }
     }
     

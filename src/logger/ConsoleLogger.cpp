@@ -1,25 +1,26 @@
 #include "Logger.h"
 #include <iostream>
+#include "constants.h"
 using namespace std;
 
 Logger logger;
 
 void Logger::info(const string& message) const {
     lock_guard lock(outputMutex);
-    cout << "\033[32m[INFO]\033[0m " << message << '\n';
+    cout << GREEN << INFO << RESET_COLOR << message << '\n';
 }
 
 void Logger::error(const string& message) const {
     lock_guard lock(outputMutex);
-    cerr << "\033[31m[ERROR]\033[0m " << message << '\n';
+    cerr << RED << ERROR << RESET_COLOR << message << '\n';
 }
 
 void Logger::debug(const string& message) const {
     lock_guard lock(outputMutex);
-    cout << "\033[36m[DEBUG]\033[0m " << message << '\n';
+    cout << BLUE << DEBUG << RESET_COLOR << message << '\n';
 }
 
 void Logger::warn(const string& message) const {
     lock_guard lock(outputMutex);
-    cout << "\033[33m[WARN]\033[0m " << message << '\n';
+    cout << YELLOW << WARN << RESET_COLOR << message << '\n';
 }

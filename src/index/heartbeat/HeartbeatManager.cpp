@@ -12,6 +12,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include "constants.h"
 
 using namespace std;
 
@@ -20,8 +21,8 @@ class HeartbeatManager {
     mutable mutex peerMutex;
     atomic<bool> running{false};
     thread heartbeatThread;
-    const chrono::seconds HEARTBEAT_INTERVAL{25};
-    const chrono::seconds PEER_TIMEOUT{50};
+    const chrono::seconds HEARTBEAT_INTERVAL{ INDEX_HEARTBEAT_INTERVAL };
+    const chrono::seconds PEER_TIMEOUT{INDEX_PEER_TIMEOUT };
     function<void(const string&, int)> onPeerDead;
 
     bool pingPeer(const string& ip, int port) const {
@@ -50,13 +51,9 @@ class HeartbeatManager {
                 vector<pair<string, int>> deadPeers;
                 lock_guard lock(peerMutex);
                 for (auto& [peer, lastSeen] : peerLastSeen) {
-                    if (now - lastSeen > PEER_TIMEOUT) {
-                        if (!pingPeer(peer.first, peer.second)) {
-                            deadPeers.push_back(peer);
-                        } else {
-                            peerLastSeen[peer] = now;
-                        }
-                    }
+                    if (now - lastSeen <= PEER_TIMEOUT) continue;
+                    if (!pingPeer(peer.first, peer.second)) deadPeers.push_back(peer);
+                    else peerLastSeen[peer] = now;
                 }
 
                 for (auto& peer : deadPeers) {

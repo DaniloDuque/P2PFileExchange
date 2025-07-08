@@ -41,7 +41,7 @@ public:
             return;
         }
 
-        if (::listen(serverSocket, 15) < 0) {
+        if (listen(serverSocket, 15) < 0) {
             logger.error("Listen failed: " + std::string(strerror(errno)));
             close(serverSocket);
             return;

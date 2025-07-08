@@ -1,5 +1,4 @@
 #pragma once
-
 #include <iostream>
 #include <thread>
 #include <string>
@@ -14,8 +13,8 @@
 #include <set>
 #include <iomanip>
 #include "logger/Logger.h"
+#include "constants.h"
 
-#define BUFFER_SIZE static_cast<size_t>(1<<10)
 #define ll long long
 #define uchar unsigned char
 using namespace std;

@@ -1,0 +1,5 @@
+/Users/duque/Projects/Distributed-Systems/P2PFileExchange/build/CMakeFiles/index_server.dir
+/Users/duque/Projects/Distributed-Systems/P2PFileExchange/build/CMakeFiles/peer_server.dir
+/Users/duque/Projects/Distributed-Systems/P2PFileExchange/build/CMakeFiles/file_finder.dir
+/Users/duque/Projects/Distributed-Systems/P2PFileExchange/build/CMakeFiles/edit_cache.dir
+/Users/duque/Projects/Distributed-Systems/P2PFileExchange/build/CMakeFiles/rebuild_cache.dir

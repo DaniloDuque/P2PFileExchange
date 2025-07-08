@@ -33,7 +33,7 @@ struct FileDTO {
     }
 
     bool operator==(const FileDTO& other) const {
-        return (hash1 == other.hash1) && (hash2 == other.hash2) && (size == other.size);
+        return hash1 == other.hash1 && hash2 == other.hash2 && size == other.size;
     }
 
 };

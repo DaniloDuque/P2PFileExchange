@@ -2,9 +2,10 @@
 #include "peer/server/PeerServer.cpp"
 #include "FileInfo.cpp"
 #include "logger/Logger.h"
+#include "constants.h"
 
 pair<string, string> requestChosenFile(const int indexSocket, const string &fileName){
-    const string package = "2 " + fileName;
+    const string package = to_string(FILE_REQUEST) + " " + fileName;
     if (send(indexSocket, package.c_str(), package.size(), 0) < 0) {
         logger.error("Error sending the package");
         close(indexSocket);
@@ -12,7 +13,7 @@ pair<string, string> requestChosenFile(const int indexSocket, const string &file
     }
     logger.info("File info requested!");
     const string info = readSingleBuffer(indexSocket);
-    if(info=="1") return {"1", ""};
+    if(info == ERR) return {ERR, ""};
     printFileInfoTable(info.substr(2, info.size()));
     string name;
     ll size;
@@ -22,7 +23,7 @@ pair<string, string> requestChosenFile(const int indexSocket, const string &file
     const string rsp = name + ' ' + to_string(size);
     sendBytes(indexSocket, rsp);
     string result = readSingleBuffer(indexSocket);
-    if(result.empty() || result == "1") return {"1", ""};
+    if(result.empty() || result == ERR) return {ERR, ""};
     sendAcknowledge(indexSocket);
     return {result, name};
 }
@@ -114,9 +115,8 @@ int main(int argc, char const *argv[]) {
     string mainPort=argv[1], indexIp=argv[2], indexPort=argv[3], fileName=argv[4], directory=argv[5];
     int indexSocket = PeerServer::connectToServer(indexIp, indexPort);
     auto [finfo, actualFileName] = getFileInfo(indexSocket, fileName);
-    if(finfo.empty()) {logger.error("Bad Response from index"); return -1;}
-    if(finfo[0]!='0') {logger.error("Requested file not found in the network"); return 0;}
+    if(finfo.empty()) { logger.error("Bad Response from index"); return -1; }
+    if(to_string(finfo[0]) != OK) { logger.error("Requested file not found in the network"); return 0; }
     auto info = FileInfo::deserialize(finfo.substr(2, finfo.size()));
     downloadFile(*info, directory, actualFileName);
-    return 0;
 }

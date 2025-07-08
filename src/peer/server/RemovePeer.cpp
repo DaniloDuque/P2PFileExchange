@@ -7,7 +7,7 @@ void removePeer(const string& ip, const string& indexIp, const string& indexPort
     if (indexSocket < 0) return;
 
     const RemovePeerDTO dto{ip, stoi(port)};
-    const string request = "3 " + dto.serialize();
+    const string request = to_string(REMOVE_PEER) + " " + dto.serialize();
     sendBytes(indexSocket, request);
     close(indexSocket);
     logger.info("Peer removal request sent to index server");

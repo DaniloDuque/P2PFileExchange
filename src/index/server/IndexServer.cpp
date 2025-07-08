@@ -6,6 +6,8 @@
 #include "dto/NewPeerDTO.cpp"
 #include "dto/RemovePeerDTO.cpp"
 #include "../heartbeat/HeartbeatManager.cpp"
+#include "constants.h"
+#include <random>
 
 class IndexServer final : public TCPServer {
     FileIndex index;
@@ -21,10 +23,17 @@ class IndexServer final : public TCPServer {
     }
 
     static string getFileMatchesResponse(vector<pair<string, shared_ptr<FileInfo>>> matches) {
-        if(matches.empty()) return "1";
-        string rsp = "0";
-        for(auto &[fileName, fileInfo] : matches){
-            rsp += " " + fileName + ',' + to_string(fileInfo->getSize()); 
+        if(matches.empty()) return ERR;
+
+        random_device rd;
+        mt19937 g(rd());
+        ranges::shuffle(matches, g);
+
+        string rsp = OK;
+        const size_t limit = min<size_t>(RESPONSE_LIST_SIZE, matches.size());
+        for(size_t i = 0; i < limit; ++i) {
+            const auto& [fileName, fileInfo] = matches[i];
+            rsp += " " + fileName + ',' + to_string(fileInfo->getSize());
         }
         return rsp;
     }
@@ -40,9 +49,9 @@ class IndexServer final : public TCPServer {
         const string request = toLower(readSingleBuffer(client_socket));
         if(request.empty()) return;
         const auto data = request.substr(2, request.size());
-        if (request[0]=='1') handleAddPeer(data);
-        if (request[0]=='2') handleFileRequest(data, client_socket);
-        if (request[0]=='3') handleRemovePeer(data);
+        if (request[0] == ADD_PEER) handleAddPeer(data);
+        if (request[0] == FILE_REQUEST) handleFileRequest(data, client_socket);
+        if (request[0] == REMOVE_PEER) handleRemovePeer(data);
         close(client_socket);
     }
 
@@ -63,23 +72,23 @@ class IndexServer final : public TCPServer {
         const vector<pair<string, shared_ptr<FileInfo>>> matches = findMatches(filename);
         string rsp = getFileMatchesResponse(matches);
         sendBytes(client_socket, rsp); 
-        if (rsp == "1") return;
-        const string request = toLower(readSingleBuffer(client_socket));  // rqst -> "name size"
+        if (rsp == ERR) return;
+        const string request = toLower(readSingleBuffer(client_socket));
         const vector<string> parts = split(request, ' ');
         if (parts.size() != 2) {
             logger.error("Invalid request format");
-            sendBytes(client_socket, rsp = "1");
+            sendBytes(client_socket, rsp = ERR);
             return;
         }
         const string& actualName = parts[0];
         const ll size = stoll(parts[1]);
         const shared_ptr<FileInfo> requestedFile = searchFileInMatches(matches, actualName, size);
         if (requestedFile == nullptr) { 
-            rsp = "1";
+            rsp = ERR;
             sendBytes(client_socket, rsp);
             return;
         }
-        rsp = "0 " + requestedFile->serialize();
+        rsp = OK + " " + requestedFile->serialize();
         sendBytes(client_socket, rsp);
         receiveAcknowledge(client_socket);
     }

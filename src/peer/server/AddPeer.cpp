@@ -18,7 +18,7 @@ void addPeer(const string &port, const string &ip, const string &indexIp, const 
     dto.ip = ip;
     dto.port = stoi(port);
     for(const auto& f : fileDirectoryReader(directory)) dto.peerFiles.push_back(f);
-    const string package = "1 " + dto.serialize();
+    const string package = to_string(ADD_PEER) + " " + dto.serialize();
     if (send(clientSocket, package.c_str(), package.size(), 0) < 0) {
         logger.error("Error sending the package");
         close(clientSocket);

@@ -4,29 +4,30 @@
 #include "logger/Logger.h"
 #include <csignal>
 
-string g_port, g_ip, g_indexIp, g_indexPort;
+string server_port, client_port, local_ip, index_ip, index_port;
 
 void signalHandler(const int signal) {
     if (signal == SIGINT || signal == SIGTERM) {
         logger.info("Shutting down gracefully...");
-        removePeer(g_ip, g_indexIp, g_indexPort, g_port);
+        removePeer(local_ip, index_ip, index_port, server_port);
         exit(0);
     }
 }
 
 int main(const int argc, char const *argv[]) {
-    if (argc < 6) {  
-        logger.error("Usage: " + string(argv[0]) + " <port> <indexIp> <indexPort> <directory>");
+    if (argc < 7) {
+        logger.error("Usage: " + string(argv[0]) + " <server port> <client port> <Ip> <index Ip> <indexPort> <directory>");
         return -1;
     }
-    g_port=argv[1]; g_ip=argv[2]; g_indexIp=argv[3]; g_indexPort=argv[4];
-    string directory=argv[5];
+    
+    server_port=argv[1]; client_port=argv[2]; local_ip=argv[3]; index_ip=argv[4]; index_port=argv[5];
+    string shared_directory=argv[6];
     
     signal(SIGINT, signalHandler);
     signal(SIGTERM, signalHandler);
     
-    thread tadd(&addPeer, ref(g_port), ref(g_ip), ref(g_indexIp), ref(g_indexPort), ref(directory));
-    PeerServer server(stoi(g_port), directory);
+    thread tadd(&addPeer, ref(server_port), ref(local_ip), ref(index_ip), ref(index_port), ref(shared_directory));
+    PeerServer server(stoi(server_port), shared_directory);
     thread tserver(&PeerServer::run, &server);
     tadd.join(); tserver.join(); 
     return 0;

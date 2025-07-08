@@ -1,0 +1,1 @@
+/usr/bin/c++ -Wall -Wextra -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/index_server.dir/src/index/main.cpp.o CMakeFiles/index_server.dir/src/logger/ConsoleLogger.cpp.o -o index_server  -lm

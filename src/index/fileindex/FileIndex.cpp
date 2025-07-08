@@ -8,22 +8,23 @@
 #include <ranges>
 #include <shared_mutex>
 
-struct FileKey {
-    ll hash1, hash2, size;
-    
-    bool operator<(const FileKey& other) const {
-        if (hash1 != other.hash1) return hash1 < other.hash1;
-        if (hash2 != other.hash2) return hash2 < other.hash2;
-        return size < other.size;
-    }
-    
-    bool operator==(const FileKey& other) const {
-        return hash1 == other.hash1 && hash2 == other.hash2 && size == other.size;
-    }
-};
-
 class FileIndex {
-    map<FileKey, shared_ptr<FileInfo>> info;
+    
+    struct Key {
+        ll hash1, hash2, size;
+    
+        bool operator<(const Key& other) const {
+            if (hash1 != other.hash1) return hash1 < other.hash1;
+            if (hash2 != other.hash2) return hash2 < other.hash2;
+            return size < other.size;
+        }
+    
+        bool operator==(const Key& other) const {
+            return hash1 == other.hash1 && hash2 == other.hash2 && size == other.size;
+        }
+    };
+    
+    map<Key, shared_ptr<FileInfo>> info;
     mutable shared_mutex indexMutex;
 
 public:
@@ -39,7 +40,7 @@ public:
     void addPeer(const NewPeerDTO& peer) {
         unique_lock lock(indexMutex);
         for (auto &pfs : peer.peerFiles) {
-            FileKey key{pfs.hash1, pfs.hash2, pfs.size};
+            Key key{pfs.hash1, pfs.hash2, pfs.size};
             PeerFileInfoDTO peerFileInfo{peer.ip, pfs.fileName, peer.port};
             if (auto it = info.find(key); it!=info.end()) {
                 it->second->knownAs(peerFileInfo);
@@ -53,11 +54,8 @@ public:
         unique_lock lock(indexMutex);
         for (auto it = info.begin(); it != info.end();) {
             it->second->removePeer(ip, port);
-            if (it->second->isEmpty()) {
-                it = info.erase(it);
-            } else {
-                ++it;
-            }
+            if (it->second->isEmpty()) it = info.erase(it);
+            else ++it;
         }
     }
 };
