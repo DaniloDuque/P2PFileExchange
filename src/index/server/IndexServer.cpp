@@ -3,11 +3,11 @@
 #include "common/server/TCPServer.cpp"
 #include "index/fileindex/FileIndex.cpp"
 #include "index/file/FileInfo.cpp"
-#include "dto/NewPeerDTO.cpp"
+#include "dto/AddPeerDTO.cpp"
 #include "dto/RemovePeerDTO.cpp"
 #include "../heartbeat/HeartbeatManager.cpp"
-#include "dto/SearchFileDTO.cpp""
-#include "dto/RequestFileDTO.cpp"
+#include "dto/FileSearchDTO.cpp""
+#include "dto/FileRequestDTO.cpp"
 #include "constants.h"
 #include <random>
 
@@ -15,21 +15,21 @@ class IndexServer final : public TCPServer {
     FileIndex index;
     HeartbeatManager heartbeat;
 
-    void addPeer(const NewPeerDTO& dto) {
+    void addPeer(const AddPeerDTO& dto) {
         index.addPeer(dto);
-        heartbeat.updatePeer(dto.ip, dto.port);
+        heartbeat.updatePeer(dto.peer);
     }
 
     void removePeer(const RemovePeerDTO& dto) {
-        heartbeat.removePeer(dto.ip, dto.port);
+        heartbeat.removePeer(dto.peer);
     }
 
     vector<pair<string, shared_ptr<FileInfo>>> findMatches(const string& alias) const {
         return index.find(alias);
     }
 
-    shared_ptr<FileInfo> searchFile(const ll hash1, const ll hash2, const ll size) const {
-        return index.find(hash1, hash2, size);
+    shared_ptr<FileInfo> searchFile(const FileDescriptor& descriptor) const {
+        return index.find(descriptor);
     }
 
     static string getFileMatchesResponse(vector<pair<string, shared_ptr<FileInfo>>> matches) {
@@ -49,15 +49,15 @@ class IndexServer final : public TCPServer {
     }
 
     void handleAddPeer(const string& request) {
-        const NewPeerDTO peerFiles = NewPeerDTO::deserialize(request);
-        logger.info("New Peer indexing started - "  + peerFiles.ip + ":" + to_string(peerFiles.port));
-        addPeer(peerFiles);
+        const AddPeerDTO new_peer = AddPeerDTO::deserialize(request);
+        logger.info("New Peer indexing started - "  + new_peer.peer.ip + ":" + to_string(new_peer.peer.port));
+        addPeer(new_peer);
     }
 
     void handleFileRequest(const string& request, const int client_socket) const {
-        const auto [hash1, hash2, size] = RequestFileDTO::deserialize(request);
-        logger.info("Peer requested file - " + to_string(hash1) + " " + to_string(hash2) + " " + to_string(size));
-        const auto requested_file_info = searchFile(hash1, hash2, size);
+        const auto [descriptor] = FileRequestDTO::deserialize(request);
+        logger.info("Peer requested file - " + to_string(descriptor.hash1) + " " + to_string(descriptor.hash2) + " " + to_string(descriptor.size));
+        const auto requested_file_info = searchFile(descriptor);
         string rsp = OK;
         if (requested_file_info != nullptr) rsp += " " + requested_file_info->serialize();
         sendBytes(client_socket, rsp);
@@ -65,13 +65,13 @@ class IndexServer final : public TCPServer {
     }
 
     void handleRemovePeer(const string& request) {
-        const auto remove_peer_dto = RemovePeerDTO::deserialize(request);
-        logger.info("Peer removal started - " + remove_peer_dto.ip + ":" + to_string(remove_peer_dto.port));
-        removePeer(remove_peer_dto);
+        const auto dto = RemovePeerDTO::deserialize(request);
+        logger.info("Peer removal started - " + dto.peer.ip + ":" + to_string(dto.peer.port));
+        removePeer(dto);
     }
 
     void handleFileSearch(const string& request, const int client_socket) const {
-        const auto file_search_dto = SearchFileDTO::deserialize(request);
+        const auto file_search_dto = FileSearchDTO::deserialize(request);
         logger.info("Searching for " + file_search_dto.filename + " in the network");
         const vector<pair<string, shared_ptr<FileInfo>>> matches = findMatches(file_search_dto.filename);
         const string rsp = getFileMatchesResponse(matches);
@@ -94,8 +94,8 @@ public:
     explicit IndexServer(const int port): TCPServer(port) {}
     
     void run() override {
-        heartbeat.setDeadPeerCallback([this](const string& ip, const int port) {
-            index.removePeer(ip, port);
+        heartbeat.setDeadPeerCallback([this](const PeerDescriptor& peer) {
+            index.removePeer(peer);
         });
         heartbeat.start();
         TCPServer::run();

@@ -1,22 +1,16 @@
 #pragma once
-#include <sstream>
-#include <string>
-using namespace std;
+#include "common/descriptor/PeerDescriptor.cpp""
 
 struct RemovePeerDTO {
-    string ip;
-    int port{};
+    PeerDescriptor peer;
 
-    string serialize() const { return ip + ',' + to_string(port); }
+    RemovePeerDTO() = default;
+    RemovePeerDTO(const PeerDescriptor& peer) : peer(peer) {}
+
+    string serialize() const { return peer.serialize(); }
 
     static RemovePeerDTO deserialize(const string &data) {
-        RemovePeerDTO peerDTO;
-        istringstream ss(data);  
-        string token;
-        getline(ss, peerDTO.ip, ',');
-        getline(ss, token, ' ');
-        peerDTO.port = stoi(token);
-        return peerDTO;
+        return RemovePeerDTO(PeerDescriptor::deserialize(data));
     }
 
 };

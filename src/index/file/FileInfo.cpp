@@ -1,10 +1,10 @@
 #pragma once
-#include "dto/PeerFileInfoDTO.cpp"
 #include "common/fileinfo/CommonFileInfo.h"
+#include "common/descriptor/FileLocation.cpp"
 using namespace std;
 
-class FileInfo final : public CommonFileInfo<FileInfo> {
-    static void computeLPSArray(const string& pattern, vector<int>& lps) {
+class FileInfo final : public CommonFileInfo<FileInfo, FileLocation> {
+    void computeLPSArray(const string& pattern, vector<int>& lps) const {
         const auto m = pattern.size();
         int length = 0;
         lps[0] = 0; 
@@ -24,7 +24,7 @@ class FileInfo final : public CommonFileInfo<FileInfo> {
         }
     }
 
-    static bool KMPIsSubstring(const string& text, const string& pattern) {
+    bool KMPIsSubstring(const string& text, const string& pattern) const {
         const auto n = text.size();
         const auto m = pattern.size();
         if (m == 0) return true; 
@@ -43,28 +43,28 @@ class FileInfo final : public CommonFileInfo<FileInfo> {
     }
 
 public:
-    FileInfo(const ll h1, const ll h2, const ll sz) : CommonFileInfo(h1, h2, sz) {}
-    FileInfo(const ll h1, const ll h2, const ll sz, const PeerFileInfoDTO& info) : CommonFileInfo(h1, h2, sz, info) {}
-    
-    string findMatch(const string alias) override {
+    FileInfo() = delete;
+    FileInfo(const FileDescriptor& descriptor, const FileLocation& location) : CommonFileInfo(descriptor, location) {}
+
+    string findMatch(const string& alias) {
         shared_lock lock(infoMutex);
-        for(auto &pfi : fileInfo) 
-            if(KMPIsSubstring(pfi.filename, alias))
-                return pfi.filename;
+        for(const auto &[_, filename] : file_locations)
+            if(KMPIsSubstring(filename, alias))
+                return filename;
         return "";
     }
     
-    void removePeer(const string& ip, const int port) {
+    void removePeer(const PeerDescriptor& peer) {
         unique_lock lock(infoMutex);
-        for (auto it = fileInfo.begin(); it != fileInfo.end();) {
-            if (it->ip == ip && it->port == port) it = fileInfo.erase(it);
+        for (auto it = file_locations.begin(); it != file_locations.end();) {
+            if (it->peer == peer) it = file_locations.erase(it);
             else ++it;
         }
     }
     
     bool isEmpty() const {
         shared_lock lock(infoMutex);
-        return fileInfo.empty();
+        return file_locations.empty();
     }
 
 };

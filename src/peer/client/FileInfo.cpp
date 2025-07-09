@@ -1,27 +1,20 @@
 #pragma once
-#include <iostream>
-#include "dto/PeerFileInfoDTO.cpp"
 #include "common/fileinfo/CommonFileInfo.h"
+#include "common/descriptor/FileLocation.cpp"
 using namespace std;
 
-class FileInfo final : public CommonFileInfo<FileInfo> {
+class FileInfo final : public CommonFileInfo<FileInfo, FileLocation> {
 public:
-    FileInfo(const ll h1, const ll h2, const ll sz) : CommonFileInfo(h1, h2, sz) {}
-    FileInfo(const ll h1, const ll h2, const ll sz, const PeerFileInfoDTO &info) : CommonFileInfo(h1, h2, sz, info) {}
+    FileInfo() = delete;
+    FileInfo(const FileDescriptor& descriptor, const FileLocation& location) : CommonFileInfo(descriptor, location) {}
 
-    set<PeerFileInfoDTO> getFileInfo() { 
+    set<FileLocation> getFileInfo() {
         shared_lock lock(infoMutex);
-        return fileInfo; 
+        return file_locations;
     }
     size_t getNumberOfPeersWithFile() const { 
         shared_lock lock(infoMutex);
-        return fileInfo.size(); 
+        return file_locations.size();
     }
-
-    string findMatch(const string alias) override {
-        shared_lock lock(infoMutex);
-        for(auto &pfi : fileInfo) if(pfi.filename == alias) return pfi.filename;
-        return "";
-    }     
 
 };

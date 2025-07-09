@@ -1,5 +1,5 @@
 #pragma once
-#include "dto/NewPeerDTO.cpp"
+#include "dto/AddPeerDTO.cpp"
 #include "PeerServer.cpp"
 #include "logger/Logger.h"
 
@@ -14,10 +14,8 @@ void addPeer(const string &port, const string &ip, const string &indexIp, const 
         logger.error("Failed to connect to index server after retries");
         return;
     }
-    NewPeerDTO dto;
-    dto.ip = ip;
-    dto.port = stoi(port);
-    for(const auto& f : fileDirectoryReader(directory)) dto.peerFiles.push_back(f);
+    AddPeerDTO dto; dto.peer = PeerDescriptor(ip, stoi(port));
+    for(const auto& f : fileDirectoryReader(directory)) dto.indexed_files.push_back(f);
     const string package = to_string(ADD_PEER) + " " + dto.serialize();
     if (send(clientSocket, package.c_str(), package.size(), 0) < 0) {
         logger.error("Error sending the package");

@@ -2,13 +2,13 @@
 #include <iostream>
 #include <utility>
 #include "HashGenerator.h"
-#include "dto/FileDTO.cpp"
+#include "../../common/descriptor/IndexedFileDescriptor.cpp"
 #include "logger/Logger.h"
 using namespace std;
 
-vector<FileDTO> fileDirectoryReader(const string &directory_name) {
+vector<IndexedFileDescriptor> fileDirectoryReader(const string &directory_name) {
     const std::filesystem::path sandbox{directory_name};
-    vector<FileDTO> res;
+    vector<IndexedFileDescriptor> res;
     
     if (!std::filesystem::exists(sandbox)) {
         logger.error("Directory does not exist: " + directory_name);

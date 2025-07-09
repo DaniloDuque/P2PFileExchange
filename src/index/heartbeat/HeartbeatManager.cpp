@@ -17,15 +17,15 @@
 using namespace std;
 
 class HeartbeatManager {
-    map<pair<string, int>, chrono::steady_clock::time_point> peerLastSeen;
+    map<PeerDescriptor, chrono::steady_clock::time_point> peerLastSeen;
     mutable mutex peerMutex;
     atomic<bool> running{false};
     thread heartbeatThread;
     const chrono::seconds HEARTBEAT_INTERVAL{ INDEX_HEARTBEAT_INTERVAL };
     const chrono::seconds PEER_TIMEOUT{INDEX_PEER_TIMEOUT };
-    function<void(const string&, int)> onPeerDead;
+    function<void(const PeerDescriptor&)> onPeerDead;
 
-    bool pingPeer(const string& ip, int port) const {
+    bool pingPeer(const PeerDescriptor& descriptor) const {
         const int sock = socket(AF_INET, SOCK_STREAM, 0);
         if (sock < 0) return false;
 
@@ -37,8 +37,8 @@ class HeartbeatManager {
 
         sockaddr_in addr{};
         addr.sin_family = AF_INET;
-        addr.sin_port = htons(port);
-        inet_pton(AF_INET, ip.c_str(), &addr.sin_addr);
+        addr.sin_port = htons(descriptor.port);
+        inet_pton(AF_INET, descriptor.ip.c_str(), &addr.sin_addr);
 
         const bool alive = connect(sock, reinterpret_cast<sockaddr *>(&addr), sizeof(addr)) == 0;
         close(sock);
@@ -48,18 +48,18 @@ class HeartbeatManager {
     void heartbeatLoop() {
         while (running) {
             auto now = chrono::steady_clock::now(); {
-                vector<pair<string, int>> deadPeers;
+                vector<PeerDescriptor> deadPeers;
                 lock_guard lock(peerMutex);
                 for (auto& [peer, lastSeen] : peerLastSeen) {
                     if (now - lastSeen <= PEER_TIMEOUT) continue;
-                    if (!pingPeer(peer.first, peer.second)) deadPeers.push_back(peer);
+                    if (!pingPeer(peer)) deadPeers.push_back(peer);
                     else peerLastSeen[peer] = now;
                 }
 
                 for (auto& peer : deadPeers) {
                     peerLastSeen.erase(peer);
-                    if (onPeerDead) onPeerDead(peer.first, peer.second);
-                    logger.warn("Removed dead peer: " + peer.first + ":" + to_string(peer.second));
+                    if (onPeerDead) onPeerDead(peer);
+                    logger.warn("Removed dead peer: " + peer.ip + ":" + to_string(peer.port));
                 }
             }
 
@@ -68,7 +68,7 @@ class HeartbeatManager {
     }
 
 public:
-    void setDeadPeerCallback(const function<void(const string&, int)> &callback) {
+    void setDeadPeerCallback(const function<void(const PeerDescriptor&)> &callback) {
         onPeerDead = callback;
     }
 
@@ -82,21 +82,21 @@ public:
         if (heartbeatThread.joinable()) heartbeatThread.join();
     }
 
-    void updatePeer(const string& ip, int port) {
+    void updatePeer(const PeerDescriptor& descriptor) {
         lock_guard lock(peerMutex);
-        peerLastSeen[{ip, port}] = chrono::steady_clock::now();
+        peerLastSeen[descriptor] = chrono::steady_clock::now();
     }
 
-    void removePeer(const string& ip, int port) {
+    void removePeer(const PeerDescriptor& descriptor) {
         lock_guard lock(peerMutex);
-        peerLastSeen.erase({ip, port});
-        if (onPeerDead) onPeerDead(ip, port);
-        logger.info("Removed stoped peer: " + ip + ":" + to_string(port));
+        peerLastSeen.erase(descriptor);
+        if (onPeerDead) onPeerDead(descriptor);
+        logger.info("Removed stoped peer: " + descriptor.ip + ":" + to_string(descriptor.port));
     }
 
-    set<pair<string, int>> getAlivePeers() const {
+    set<PeerDescriptor> getAlivePeers() const {
         lock_guard lock(peerMutex);
-        set<pair<string, int>> alive;
+        set<PeerDescriptor> alive;
         for (const auto &peer: peerLastSeen | views::keys) {
             alive.insert(peer);
         }
