@@ -1,7 +1,8 @@
 #pragma once
 #include "index/file/FileInfo.cpp"
 #include "common/descriptor/FileDescriptor.cpp"
-#include "common/descriptor/FileLocation.cpp""
+#include "common/descriptor/FileLocation.cpp"
+#include "common/descriptor/SearchResult.cpp"
 #include "dto/AddPeerDTO.cpp"
 #include <iostream>
 #include <map>
@@ -14,11 +15,12 @@ class FileIndex {
     mutable shared_mutex indexMutex;
 
 public:
-    vector<pair<string, shared_ptr<FileInfo>>> find(const string& alias) const {
+    SearchResult find(const string& alias) const {
         shared_lock lock(indexMutex);
-        vector<pair<string, shared_ptr<FileInfo>>> rs;
+        SearchResult rs;
         for (const auto &val: info | views::values) {
-            if(string match = val->findMatch(alias); !match.empty()) rs.emplace_back(match, val);
+            if(string match = val->findMatch(alias); !match.empty())
+                rs.values.emplace_back(match, val->getFileDescriptor());
         }
         return rs;
     }
@@ -40,7 +42,7 @@ public:
                 it->second->knownAs(value);
                 continue;
             }
-            info[key] = make_shared<FileInfo>(FileInfo(key, value));
+            info[key] = make_shared<FileInfo>(key, value);
         }
     }
 

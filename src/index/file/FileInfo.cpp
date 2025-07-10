@@ -1,6 +1,7 @@
 #pragma once
 #include "common/fileinfo/CommonFileInfo.h"
 #include "common/descriptor/FileLocation.cpp"
+#include "common/descriptor/FileDescriptor.cpp"
 using namespace std;
 
 class FileInfo final : public CommonFileInfo<FileInfo, FileLocation> {

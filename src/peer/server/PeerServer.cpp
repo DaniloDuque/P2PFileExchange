@@ -2,7 +2,7 @@
 #include "util.h"
 #include "common/server/TCPServer.cpp"
 #include "dto/DownloadFileChunkDTO.cpp"
-#include "FileReader.cpp"
+#include "../client/FileReader.cpp"
 #include "logger/Logger.h"
 
 class PeerServer final : public TCPServer {
@@ -28,7 +28,7 @@ class PeerServer final : public TCPServer {
         while (leftBytes > 0) {
             const size_t bytesToRead = min(leftBytes, static_cast<unsigned ll>(BUFFER_SIZE));
             if (const size_t bytesRead = fread(buffer, 1, bytesToRead, file); bytesRead > 0) {
-                if(string data(buffer, bytesRead); !sendBytes(peerSocket, data)) break;
+                if(string data(buffer, bytesRead); !send_bytes(peerSocket, data)) break;
                 leftBytes -= bytesRead;
             } else {
                 logger.error("Error reading from file or end of file.");
@@ -77,7 +77,7 @@ public:
     }
 
     PeerServer(const int port, const string &directory): TCPServer(port), path(directory) {
-        for(vector<IndexedFileDescriptor> list = fileDirectoryReader(directory); auto &pf : list)
+        for(const vector<IndexedFileDescriptor> list = fileDirectoryReader(directory); auto &pf : list)
             sharedFiles.emplace(pf.file, pf.filename);
     }
 

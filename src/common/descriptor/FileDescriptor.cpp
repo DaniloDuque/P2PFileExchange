@@ -2,10 +2,11 @@
 #include "util.h"
 
 struct FileDescriptor {
-    ll hash1, hash2, size;
+    ll hash1, hash2;
+    size_t size;
 
     FileDescriptor() = default;
-    FileDescriptor(const ll h1, const ll h2, const ll sz) : hash1(h1), hash2(h2), size(sz) {}
+    FileDescriptor(const ll h1, const ll h2, const size_t sz) : hash1(h1), hash2(h2), size(sz) {}
 
     bool operator<(const FileDescriptor& other) const {
         if (hash1 != other.hash1) return hash1 < other.hash1;
@@ -27,7 +28,7 @@ struct FileDescriptor {
         string token;
         getline(ss, token, ','); fd.hash1 = stoll(token);
         getline(ss, token, ','); fd.hash2 = stoll(token);
-        getline(ss, token, ','); fd.size = stoll(token);
+        getline(ss, token, ','); fd.size = stoull(token);
         return fd;
     }
     

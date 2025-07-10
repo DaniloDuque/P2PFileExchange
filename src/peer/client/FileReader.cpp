@@ -21,9 +21,10 @@ vector<IndexedFileDescriptor> fileDirectoryReader(const string &directory_name) 
     }
     
     for(auto const & dir_entry : std::filesystem::directory_iterator(sandbox)) {
-        auto [fst, snd] = doubleHashFile(dir_entry.path());
+        auto [h1, h2] = doubleHashFile(dir_entry.path());
         string name = dir_entry.path().filename();
-        res.emplace_back(fst, snd, static_cast<ll>(std::filesystem::file_size(dir_entry)), name);
+        FileDescriptor desc(h1, h2, static_cast<ll>(std::filesystem::file_size(dir_entry)));
+        res.emplace_back(desc, name);
     }
     return res;
 }

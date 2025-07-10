@@ -1,29 +1,28 @@
 #pragma once
 #include <iostream>
 #include <shared_mutex>
+#include "common/descriptor/FileDescriptor.cpp"
 using namespace std;
 
 template<typename derived, typename file_location>
 class CommonFileInfo {
 protected:
-    const FileDescriptor descriptor;
-    set<file_location> file_locations;
+    const FileDescriptor descriptor{};
+    set<file_location> file_locations{};
     mutable shared_mutex infoMutex;
 
 public:
-
-    CommonFileInfo(const FileDescriptor& descriptor, const file_location& location): descriptor(descriptor) {
-        knownAs(location);
-    }
-    CommonFileInfo(const ll h1, const ll h2, const ll sz, const file_location& location) : descriptor(h1, h2, sz) {
-        knownAs(location);
-    };
 
     void knownAs(const file_location& info) {
         unique_lock lock(infoMutex);
         file_locations.insert(info);
     }
 
+    CommonFileInfo(const FileDescriptor& descriptor, const file_location& location): descriptor(descriptor) {
+        knownAs(location);
+    }
+
+    CommonFileInfo() = default;
     CommonFileInfo(const CommonFileInfo&) = delete;
     CommonFileInfo& operator=(const CommonFileInfo&) = delete;
     CommonFileInfo(CommonFileInfo&&) = delete;
@@ -42,7 +41,7 @@ public:
         return rsp;
     }       
 
-    static unique_ptr<derived> deserialize(const string& data) {
+    static derived deserialize(const string& data) {
         istringstream ss(data);
         string token;
         getline(ss, token, ',');
@@ -50,10 +49,10 @@ public:
         getline(ss, token, ',');
         ll h2 = stoll(token); 
         getline(ss, token, ' '); 
-        ll sz = stoll(token); 
-        auto new_file_locations = make_unique<derived>(h1, h2, sz);
+        size_t sz = stoll(token);
+        auto new_file_locations = derived(h1, h2, sz);
         while (getline(ss, token, ' ')) {
-            new_file_locations->knownAs(file_location::deserialize(token));
+            new_file_locations.knownAs(file_location::deserialize(token));
         }
         return new_file_locations;
     }
@@ -64,6 +63,14 @@ public:
 
     bool operator<(const CommonFileInfo& other) const {
         return descriptor < other.descriptor;
+    }
+
+    FileDescriptor getFileDescriptor() const {
+        return descriptor;
+    }
+
+    shared_ptr<FileDescriptor> getFileDescriptorPtr() const {
+        return make_shared<FileDescriptor>(descriptor);
     }
 
 };

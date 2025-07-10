@@ -6,10 +6,11 @@
 #include "dto/AddPeerDTO.cpp"
 #include "dto/RemovePeerDTO.cpp"
 #include "../heartbeat/HeartbeatManager.cpp"
-#include "dto/FileSearchDTO.cpp""
+#include "dto/FileSearchDTO.cpp"
 #include "dto/FileRequestDTO.cpp"
+#include "dto/SearchResultDTO.cpp"
+#include "descriptor/SearchResult.cpp"
 #include "constants.h"
-#include <random>
 
 class IndexServer final : public TCPServer {
     FileIndex index;
@@ -24,28 +25,12 @@ class IndexServer final : public TCPServer {
         heartbeat.removePeer(dto.peer);
     }
 
-    vector<pair<string, shared_ptr<FileInfo>>> findMatches(const string& alias) const {
+    SearchResult find_matches(const string& alias) const {
         return index.find(alias);
     }
 
-    shared_ptr<FileInfo> searchFile(const FileDescriptor& descriptor) const {
+    shared_ptr<FileInfo> search_file(const FileDescriptor& descriptor) const {
         return index.find(descriptor);
-    }
-
-    static string getFileMatchesResponse(vector<pair<string, shared_ptr<FileInfo>>> matches) {
-        if(matches.empty()) return ERR;
-
-        random_device rd;
-        mt19937 g(rd());
-        ranges::shuffle(matches, g);
-
-        string rsp = OK;
-        const size_t limit = min<size_t>(RESPONSE_LIST_SIZE, matches.size());
-        for(size_t i = 0; i < limit; ++i) {
-            const auto& [fileName, fileInfo] = matches[i];
-            rsp += " " + fileName + ',' + to_string(fileInfo->getSize());
-        }
-        return rsp;
     }
 
     void handleAddPeer(const string& request) {
@@ -57,10 +42,10 @@ class IndexServer final : public TCPServer {
     void handleFileRequest(const string& request, const int client_socket) const {
         const auto [descriptor] = FileRequestDTO::deserialize(request);
         logger.info("Peer requested file - " + to_string(descriptor.hash1) + " " + to_string(descriptor.hash2) + " " + to_string(descriptor.size));
-        const auto requested_file_info = searchFile(descriptor);
+        const auto requested_file_info = search_file(descriptor);
         string rsp = OK;
         if (requested_file_info != nullptr) rsp += " " + requested_file_info->serialize();
-        sendBytes(client_socket, rsp);
+        send_bytes(client_socket, rsp);
         receiveAcknowledge(client_socket);
     }
 
@@ -73,9 +58,9 @@ class IndexServer final : public TCPServer {
     void handleFileSearch(const string& request, const int client_socket) const {
         const auto file_search_dto = FileSearchDTO::deserialize(request);
         logger.info("Searching for " + file_search_dto.filename + " in the network");
-        const vector<pair<string, shared_ptr<FileInfo>>> matches = findMatches(file_search_dto.filename);
-        const string rsp = getFileMatchesResponse(matches);
-        sendBytes(client_socket, rsp);
+        const auto matches = find_matches(file_search_dto.filename);
+        const SearchResultDTO dto(matches);
+        send_bytes(client_socket, dto.serialize());
     }
 
     void handleClient(const int client_socket) override {

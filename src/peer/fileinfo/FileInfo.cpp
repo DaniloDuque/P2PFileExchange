@@ -5,13 +5,15 @@ using namespace std;
 
 class FileInfo final : public CommonFileInfo<FileInfo, FileLocation> {
 public:
-    FileInfo() = delete;
+    FileInfo() = default;
     FileInfo(const FileDescriptor& descriptor, const FileLocation& location) : CommonFileInfo(descriptor, location) {}
+    FileInfo(const ll h1, const ll h2, const size_t sz) : CommonFileInfo(FileDescriptor(h1, h2, sz), FileLocation(PeerDescriptor("", 0), "")) {}
 
-    set<FileLocation> getFileInfo() {
+    set<FileLocation> getFileLocation() const {
         shared_lock lock(infoMutex);
         return file_locations;
     }
+
     size_t getNumberOfPeersWithFile() const { 
         shared_lock lock(infoMutex);
         return file_locations.size();

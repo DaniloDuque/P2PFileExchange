@@ -7,7 +7,7 @@ set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 # Include directories
 include_directories(src)
 include_directories(src/common)
-include_directories(src/dto)
+include_directories(src/common/dto)
 include_directories(src/index)
 include_directories(src/logger)
 include_directories(src/peer)
@@ -29,8 +29,7 @@ add_executable(peer_server
 
 # File Finder Client
 add_executable(file_finder
-    src/peer/client/FileFinder.cpp
-    src/logger/ConsoleLogger.cpp
+        src/logger/ConsoleLogger.cpp
 )
 
 target_link_libraries(index_server m)

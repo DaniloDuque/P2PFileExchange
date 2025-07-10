@@ -3,17 +3,17 @@
 #include "common/descriptor/PeerDescriptor.cpp"
 
 struct FileSearchDTO {
-    PeerDescriptor peer;
-    string filename;
+    const PeerDescriptor peer;
+    const string filename;
 
-    FileSearchDTO() = default;
+    FileSearchDTO() = delete;
     FileSearchDTO(const PeerDescriptor& peer, const string& filename) : peer(peer), filename(filename) {}
 
     string serialize() const {
         return filename + ',' + peer.serialize();
     }
 
-    static FileSearchDTO deserialize(const string &data) {
+    static FileSearchDTO deserialize(const string& data) {
         istringstream ss(data);
         string filename, ip, token;
 

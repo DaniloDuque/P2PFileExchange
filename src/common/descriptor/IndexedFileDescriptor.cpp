@@ -3,12 +3,11 @@
 #include "FileDescriptor.cpp"
 
 struct IndexedFileDescriptor {
-    FileDescriptor file{};
-    string filename;
+    const FileDescriptor file{};
+    const string filename;
 
     IndexedFileDescriptor() = default;
     IndexedFileDescriptor(const FileDescriptor& fd) : file(fd) {}
-    IndexedFileDescriptor(const ll h1, const ll h2, const ll sz, const string& alias) : file(h1, h2, sz), filename(alias) {}
     IndexedFileDescriptor(const FileDescriptor& fd, const string& alias) : file(fd), filename(alias) {}
 
     string serialize() const {

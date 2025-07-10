@@ -3,22 +3,25 @@
 #include "common/descriptor/FileDescriptor.cpp"
 
 struct DownloadFileChunkDTO {
-    FileDescriptor file;
-    ll startByte, chunkSize;
+    const FileDescriptor file;
+    const size_t startByte, chunkSize;
+
+    DownloadFileChunkDTO() = delete;
+    DownloadFileChunkDTO(const FileDescriptor& file, const size_t startByte, const size_t chunkSize) : file(file), startByte(startByte), chunkSize(chunkSize) {}
 
     string serialize() const {
         return to_string(startByte) + ',' + to_string(chunkSize) + ',' + file.serialize();
     }
 
-    static DownloadFileChunkDTO deserialize(const string &data) {
+    static DownloadFileChunkDTO deserialize(const string& data) {
         istringstream ss(data);
         string token;
 
         getline(ss, token, ',');
-        const ll startByte = stoll(token);
+        const size_t startByte = stoll(token);
 
         getline(ss, token, ',');
-        const ll chunkSize = stoll(token);
+        const size_t chunkSize = stoll(token);
 
         string fd_serialized;
         getline(ss, token, ','); fd_serialized += token + ',';

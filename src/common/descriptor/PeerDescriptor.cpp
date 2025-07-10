@@ -1,11 +1,10 @@
 #pragma once
-#include "IndexedFileDescriptor.cpp"
 
 struct PeerDescriptor {
-    string ip;
-    int port;
+    const string ip{};
+    const int port;
 
-    PeerDescriptor() = default;
+    PeerDescriptor() = delete;
     PeerDescriptor(const string& ip, const int port) : ip(ip), port(port) {}
 
     bool operator<(const PeerDescriptor& other) const {

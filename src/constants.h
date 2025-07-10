@@ -13,14 +13,15 @@ constexpr string YELLOW = "\033[0;33m";
 constexpr string BLUE = "\033[0;34m";
 constexpr string RESET_COLOR = "\033[0m";
 
-constexpr string INFO = "INFO";
-constexpr string ERROR = "ERROR";
-constexpr string DEBUG = "DEBUG";
-constexpr string WARN = "WARN";
+constexpr string INFO = "[INFO]";
+constexpr string ERROR = "[ERROR]";
+constexpr string DEBUG = "[DEBUG]";
+constexpr string WARN = "[WARN]";
 
 constexpr string ACK = "ACK";
 constexpr string ERR = "1";
 constexpr string OK = "0";
+constexpr char END_OF_STREAM = '\x04';
 
 constexpr char ADD_PEER = '1';
 constexpr char FILE_REQUEST = '2';

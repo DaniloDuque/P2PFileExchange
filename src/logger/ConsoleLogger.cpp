@@ -7,20 +7,20 @@ Logger logger;
 
 void Logger::info(const string& message) const {
     lock_guard lock(outputMutex);
-    cout << GREEN << INFO << RESET_COLOR << message << '\n';
+    cout << GREEN << INFO << " " << RESET_COLOR << message << '\n';
 }
 
 void Logger::error(const string& message) const {
     lock_guard lock(outputMutex);
-    cerr << RED << ERROR << RESET_COLOR << message << '\n';
+    cerr << RED << ERROR << " " << RESET_COLOR << message << '\n';
 }
 
 void Logger::debug(const string& message) const {
     lock_guard lock(outputMutex);
-    cout << BLUE << DEBUG << RESET_COLOR << message << '\n';
+    cout << BLUE << DEBUG << " " << RESET_COLOR << message << '\n';
 }
 
 void Logger::warn(const string& message) const {
     lock_guard lock(outputMutex);
-    cout << YELLOW << WARN << RESET_COLOR << message << '\n';
+    cout << YELLOW << WARN << " " << RESET_COLOR << message << '\n';
 }

@@ -1,15 +1,15 @@
 #pragma once
-#include "common/descriptor/PeerDescriptor.cpp""
+#include "common/descriptor/PeerDescriptor.cpp"
 
 struct RemovePeerDTO {
-    PeerDescriptor peer;
+    const PeerDescriptor peer;
 
-    RemovePeerDTO() = default;
+    RemovePeerDTO() = delete;
     RemovePeerDTO(const PeerDescriptor& peer) : peer(peer) {}
 
     string serialize() const { return peer.serialize(); }
 
-    static RemovePeerDTO deserialize(const string &data) {
+    static RemovePeerDTO deserialize(const string& data) {
         return RemovePeerDTO(PeerDescriptor::deserialize(data));
     }
 

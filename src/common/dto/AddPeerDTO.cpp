@@ -1,12 +1,13 @@
 #pragma once
 #include "util.h"
 #include "common/descriptor/PeerDescriptor.cpp"
+#include "common/descriptor/IndexedFileDescriptor.cpp"
 
 struct AddPeerDTO {
     PeerDescriptor peer;
     vector<IndexedFileDescriptor> indexed_files;
 
-    AddPeerDTO() = default;
+    AddPeerDTO() = delete;
     AddPeerDTO(const PeerDescriptor& peer, const vector<IndexedFileDescriptor>& indexed_files) : peer(peer), indexed_files(indexed_files) {}
 
     string serialize() const {
@@ -15,7 +16,7 @@ struct AddPeerDTO {
         return ser;
     }
 
-    static AddPeerDTO deserialize(const string &data) {
+    static AddPeerDTO deserialize(const string& data) {
         istringstream ss(data);
         string token;
 
