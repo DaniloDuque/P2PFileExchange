@@ -1,5 +1,6 @@
 #pragma once
 #include "Server.h"
+#include "common/bytestream/TCPStream.cpp"
 #include "logger/Logger.h"
 #include <thread>
 #include <cstring>
@@ -7,10 +8,11 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include "constants.h"
 
 class TCPServer : public Server {
 public:
-    explicit TCPServer(const int port): Server(port) {}
+    TCPServer(shared_ptr<ByteStream>& stream, const int port) : Server(stream, port) {}
 
     void run() override {
         const int serverSocket = socket(AF_INET, SOCK_STREAM, 0);

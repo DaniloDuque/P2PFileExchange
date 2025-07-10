@@ -10,7 +10,6 @@
 #include "dto/FileSearchDTO.cpp"
 #include "dto/FileRequestDTO.cpp"
 #include "dto/SearchResultDTO.cpp"
-#include "common/bytestream/TCPStream.cpp"
 #include <fcntl.h>
 #include <unistd.h>
 using namespace std;
@@ -54,7 +53,7 @@ protected:
         return {true, T::deserialize(response.substr(2))};
     }
 
-    void download_file_chunk(const DownloadFileChunkDTO& dto, const PeerDescriptor& peer, const string& filename, size_t offset) {
+    void download_file_chunk(const DownloadFileChunkDTO& dto, const PeerDescriptor& peer, const string& filename, const size_t offset) {
         const int peerSocket = connect_to_server(peer);
         const string finfo = dto.serialize();
         stream->write(peerSocket, finfo);
@@ -75,15 +74,16 @@ protected:
         close(fd); close(peerSocket);
     }
 
-
-
-
 public:
     TCPClient() = delete;
-    TCPClient(const PeerDescriptor& peer,
+    TCPClient(const shared_ptr<ByteStream> &stream,
+                  const shared_ptr<Encoder> &encoder,
+                  const PeerDescriptor& peer,
                   const PeerDescriptor& index,
                   const string& shared_directory)
-            : Client(make_shared<TCPStream>(index.ip, index.port), peer, index, shared_directory) {}    ~TCPClient() override = default;
+            : Client(stream, encoder, peer, index, shared_directory) {}
+
+    ~TCPClient() override = default;
 
     bool add_peer() override {
         int clientSocket = 0;

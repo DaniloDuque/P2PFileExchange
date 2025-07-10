@@ -1,5 +1,4 @@
 #pragma once
-#include "constants.h"
 #include "descriptor/SearchResult.cpp"
 
 struct SearchResultDTO {

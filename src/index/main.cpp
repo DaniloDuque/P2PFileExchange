@@ -8,7 +8,9 @@ int main(const int argc, char const *argv[]) {
         return 1;
     }
     const int indexPort = stoi(argv[1]);
-    IndexServer server(indexPort);
+    const auto tcp = make_shared<TCPStream>();
+    auto base = static_pointer_cast<ByteStream>(tcp);
+    IndexServer server(base, indexPort);
     server.run();
     return 0;
 }

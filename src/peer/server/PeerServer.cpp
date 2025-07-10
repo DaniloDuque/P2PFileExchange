@@ -10,7 +10,7 @@ class PeerServer final : public TCPServer {
     set<IndexedFileDescriptor> sharedFiles;
 
     void handleClient(const int peerSocket) override {
-        const string request = readSingleBuffer(peerSocket);
+        const string request = stream->read(peerSocket);
         logger.info("Client on socket: " + to_string(peerSocket));
         if(!request.empty()) sendFilePart(peerSocket, DownloadFileChunkDTO::deserialize(request));
     }
@@ -28,7 +28,7 @@ class PeerServer final : public TCPServer {
         while (leftBytes > 0) {
             const size_t bytesToRead = min(leftBytes, static_cast<unsigned ll>(BUFFER_SIZE));
             if (const size_t bytesRead = fread(buffer, 1, bytesToRead, file); bytesRead > 0) {
-                if(string data(buffer, bytesRead); !send_bytes(peerSocket, data)) break;
+                if(string data(buffer, bytesRead); !stream->write(peerSocket, data)) break;
                 leftBytes -= bytesRead;
             } else {
                 logger.error("Error reading from file or end of file.");
