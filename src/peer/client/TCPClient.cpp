@@ -9,43 +9,50 @@
 #include "dto/RemovePeerDTO.cpp"
 #include "dto/FileSearchDTO.cpp"
 #include "dto/FileRequestDTO.cpp"
-#include "dto/SearchResultDTO.cpp"
 #include <fcntl.h>
 #include <unistd.h>
 using namespace std;
 
 class TCPClient final : public Client {
 protected:
+    constexpr int MAX_RETRIES = 5;
+    constexpr int RETRY_DELAY_MS = 200;
     int connect_to_server(const PeerDescriptor& peer) override {
-        logger.info("Establishing connection to " + peer.ip + ":" + to_string(peer.port));
-        const int socket = socket(AF_INET, SOCK_STREAM, 0);
-        if (socket < 0) {
-            logger.error("Error creating socket");
-            return -1;
-        }
-        constexpr
-        size_t bufferSize = BUFFER_SIZE;
-        if (setsockopt(socket, SOL_SOCKET, SO_RCVBUF, &bufferSize, sizeof(bufferSize)) < 0)
-            logger.warn("Error setting receive buffer size: " + string(strerror(errno)));
+        for (int attempt = 1; attempt <= MAX_RETRIES; ++attempt) {
+            logger.info("Connecting to " + peer.ip + ":" + to_string(peer.port) + " (attempt " + to_string(attempt) + ")");
+            const int sock = socket(AF_INET, SOCK_STREAM, 0);
+            if (sock < 0) {
+                logger.error("Error creating socket");
+                return -1;
+            }
 
-        if (setsockopt(socket, SOL_SOCKET, SO_SNDBUF, &bufferSize, sizeof(bufferSize)) < 0)
-            logger.warn("Error setting send buffer size: " + string(strerror(errno)));
+            constexpr size_t bufferSize = BUFFER_SIZE;
+            setsockopt(sock, SOL_SOCKET, SO_RCVBUF, &bufferSize, sizeof(bufferSize));
+            setsockopt(sock, SOL_SOCKET, SO_SNDBUF, &bufferSize, sizeof(bufferSize));
 
-        sockaddr_in serverAddress{};
-        serverAddress.sin_family = AF_INET;
-        serverAddress.sin_port = htons(peer.port);
-        if (inet_pton(AF_INET, peer.ip.c_str(), &serverAddress.sin_addr) <= 0) {
-            logger.error("Invalid address or address not supported");
-            close(socket);
-            return -1;
+            sockaddr_in serverAddress{};
+            serverAddress.sin_family = AF_INET;
+            serverAddress.sin_port = htons(peer.port);
+
+            if (inet_pton(AF_INET, peer.ip.c_str(), &serverAddress.sin_addr) <= 0) {
+                logger.error("Invalid address: " + peer.ip);
+                close(sock);
+                return -1;
+            }
+
+            if (connect(sock, reinterpret_cast<sockaddr*>(&serverAddress), sizeof(serverAddress)) == 0) {
+                logger.info("Connection established to " + peer.ip + ":" + to_string(peer.port));
+                return sock;
+            }
+            logger.warn("Connection failed: " + string(strerror(errno)));
+            close(sock);
+            if (attempt < MAX_RETRIES) this_thread::sleep_for(chrono::milliseconds(RETRY_DELAY_MS));
         }
-        if (connect(socket, reinterpret_cast<sockaddr *>(&serverAddress), sizeof(serverAddress)) < 0) {
-            logger.error("Error connecting to the server: " + string(strerror(errno)));
-            close(socket);
-            return -1;
-        }
-        return socket;
+
+        logger.error("Failed to connect to " + peer.ip + ":" + to_string(peer.port) + " after " + to_string(MAX_RETRIES) + " attempts");
+        return -1;
     }
+
 
     template<typename T>
     pair<bool, T> deserialize_response(const string &response) {
@@ -56,8 +63,8 @@ protected:
     void download_file_chunk(const DownloadFileChunkDTO& dto, const PeerDescriptor& peer, const string& filename, const size_t offset) {
         const int peerSocket = connect_to_server(peer);
         const string finfo = dto.serialize();
-        stream->write(peerSocket, finfo);
-        const string file_chunk = stream->read(peerSocket);
+        stream->write(true, peerSocket, finfo);
+        const auto [status, file_chunk] = stream->read(peerSocket);
         const string decoded_file_chunk = encoder->decode(file_chunk);
 
         const int fd = open(filename.c_str(), O_WRONLY);
@@ -79,30 +86,25 @@ public:
     TCPClient(const shared_ptr<ByteStream> &stream,
                   const shared_ptr<Encoder> &encoder,
                   const PeerDescriptor& peer,
+                  const PeerDescriptor& server,
                   const PeerDescriptor& index,
                   const string& shared_directory)
-            : Client(stream, encoder, peer, index, shared_directory) {}
+            : Client(stream, encoder, peer, server, index, shared_directory) {}
 
     ~TCPClient() override = default;
 
-    bool add_peer() override {
-        int clientSocket = 0;
-        for(int i = 0; i < 5; i++) {
-            clientSocket = connect_to_server(index);
-            if(clientSocket >= 0) break;
-            this_thread::sleep_for(chrono::milliseconds(200));
-        }
-        if (clientSocket < 0) {
-            logger.error("Failed to connect to index server after retries");
-            return false;
-        }
-        const vector<IndexedFileDescriptor> files = fileDirectoryReader(shared_directory);
-        const AddPeerDTO dto(peer, files);
-        if (const string package = to_string(ADD_PEER) + " " + dto.serialize(); !stream->write(clientSocket, package)) {
+    bool add_peer(const set<IndexedFileDescriptor>& shared_files) override {
+        const int clientSocket = connect_to_server(index);
+        if (clientSocket < 0) return false;
+
+        const AddPeerDTO dto(server, shared_files);
+
+        if (const string package = to_string(ADD_PEER) + " " + dto.serialize(); !stream->write(true, clientSocket, package)) {
             logger.error("Error sending the package");
             close(clientSocket);
             return false;
         }
+
         logger.info("Package sent!");
         close(clientSocket);
         return true;
@@ -114,9 +116,9 @@ public:
             logger.error("Failed to connect to index server");
             return false;
         }
-        const RemovePeerDTO dto(peer);
+        const RemovePeerDTO dto(server);
         const string request = to_string(REMOVE_PEER) + " " + dto.serialize();
-        stream->write(index_socket, request);
+        stream->write(true, index_socket, request);
         close(index_socket);
         logger.info("Peer removal request sent to index server");
         return true;
@@ -130,12 +132,12 @@ public:
         }
         const FileSearchDTO dto(peer, filename);
         const string request = to_string(FILE_SEARCH) + " " + dto.serialize();
-        stream->write(index_socket, request);
+        stream->write(true, index_socket, request);
         logger.info("File search request sent to index server");
-        const string response = stream->read(index_socket);
+        const auto [status, payload] = stream->read(index_socket);
         close(index_socket);
         logger.info("File search response received from index server");
-        return deserialize_response<SearchResult>(response);
+        return deserialize_response<SearchResult>(payload);
     }
 
     pair<bool, FileInfo> request_file(const FileDescriptor& descriptor) override {
@@ -146,19 +148,19 @@ public:
         }
         const FileRequestDTO dto(descriptor);
         const string request = to_string(FILE_REQUEST) + " " + dto.serialize();
-        stream->write(index_socket, request);
+        stream->write(true, index_socket, request);
         logger.info("File request sent to index server");
-        const string response = stream->read(index_socket);
+        const auto [status, payload] = stream->read(index_socket);
         close(index_socket);
         logger.info("File request response received from index server");
-        return deserialize_response<FileInfo>(response);
+        return deserialize_response<FileInfo>(payload);
     }
 
     bool download_file(const FileInfo& info, const string& filename) override {
-        const string directory = shared_directory + "/" + to_string(peer.port);
+        const string directory = output_directory + "/" + to_string(peer.port);
         const string output_file = directory + "/" + filename;
         const size_t numPeers = info.getNumberOfPeersWithFile();
-        const size_t totalSize = info.getSize();
+        const size_t totalSize = info.get_file_size();
         const size_t chunkSize = totalSize / numPeers;
         size_t startByte = 0, mod = totalSize % numPeers;
 
@@ -179,7 +181,7 @@ public:
             if (mod > 0) mod--;
             startByte += currentChunkSize;
             threads.emplace_back([=, &info, this] {
-                const DownloadFileChunkDTO dto(info.getFileDescriptor(), offset, currentChunkSize);
+                const DownloadFileChunkDTO dto(info.get_file_descriptor(), offset, currentChunkSize);
                 download_file_chunk(dto, currentPeer, output_file, offset);
             });
         }

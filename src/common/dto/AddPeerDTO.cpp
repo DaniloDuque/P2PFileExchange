@@ -5,10 +5,10 @@
 
 struct AddPeerDTO {
     PeerDescriptor peer;
-    vector<IndexedFileDescriptor> indexed_files;
+    set<IndexedFileDescriptor> indexed_files;
 
     AddPeerDTO() = delete;
-    AddPeerDTO(const PeerDescriptor& peer, const vector<IndexedFileDescriptor>& indexed_files) : peer(peer), indexed_files(indexed_files) {}
+    AddPeerDTO(const PeerDescriptor& peer, const set<IndexedFileDescriptor>& indexed_files) : peer(peer), indexed_files(indexed_files) {}
 
     string serialize() const {
         string ser = peer.ip + ',' + to_string(peer.port);
@@ -23,10 +23,10 @@ struct AddPeerDTO {
         getline(ss, token, ' ');
         const PeerDescriptor peer = PeerDescriptor::deserialize(token);
 
-        vector<IndexedFileDescriptor> indexed_files;
+        set<IndexedFileDescriptor> indexed_files;
         while (getline(ss, token, ' ')) {
             if (!token.empty())
-                indexed_files.push_back(IndexedFileDescriptor::deserialize(token));
+                indexed_files.insert(IndexedFileDescriptor::deserialize(token));
         }
 
         return AddPeerDTO(peer, indexed_files);

@@ -20,7 +20,7 @@ public:
         SearchResult rs;
         for (const auto &val: info | views::values) {
             if(string match = val->findMatch(alias); !match.empty())
-                rs.values.emplace_back(match, val->getFileDescriptor());
+                rs.values.emplace_back(match, val->get_file_descriptor());
         }
         return rs;
     }
@@ -39,7 +39,7 @@ public:
             auto key = pfs.file;
             auto value = FileLocation(peer.peer, pfs.filename);
             if (auto it = info.find(key); it!=info.end()) {
-                it->second->knownAs(value);
+                it->second->known_as(value);
                 continue;
             }
             info[key] = make_shared<FileInfo>(key, value);

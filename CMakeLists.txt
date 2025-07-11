@@ -15,23 +15,17 @@ include_directories(src/peer/client)
 include_directories(src/peer/server)
 include_directories(src/peer/server/hash)
 
-# Index Server
+# Index Server Executable
 add_executable(index_server
     src/index/main.cpp
     src/logger/ConsoleLogger.cpp
 )
 
-# Peer Server
-add_executable(peer_server
+# Peer Executable
+add_executable(peer
     src/peer/main.cpp
     src/logger/ConsoleLogger.cpp
 )
 
-# File Finder Client
-add_executable(file_finder
-        src/logger/ConsoleLogger.cpp
-)
-
 target_link_libraries(index_server m)
-target_link_libraries(peer_server m)
-target_link_libraries(file_finder m)
+target_link_libraries(peer m)

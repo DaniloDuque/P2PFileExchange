@@ -13,9 +13,9 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include "constants.h"
-
 using namespace std;
 
+// Use the same mutex as the index
 class HeartbeatManager {
     map<PeerDescriptor, chrono::steady_clock::time_point> peerLastSeen;
     mutable mutex peerMutex;

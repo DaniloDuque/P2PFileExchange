@@ -1,6 +1,4 @@
 #include "util.h"
-#include "server/AddPeer.cpp"
-#include "server/RemovePeer.cpp"
 #include "logger/Logger.h"
 #include <csignal>
 
@@ -9,7 +7,6 @@ string server_port, client_port, local_ip, index_ip, index_port;
 void signalHandler(const int signal) {
     if (signal == SIGINT || signal == SIGTERM) {
         logger.info("Shutting down gracefully...");
-        removePeer(local_ip, index_ip, index_port, server_port);
         exit(0);
     }
 }
@@ -26,9 +23,5 @@ int main(const int argc, char const *argv[]) {
     signal(SIGINT, signalHandler);
     signal(SIGTERM, signalHandler);
     
-    thread tadd(&addPeer, ref(server_port), ref(local_ip), ref(index_ip), ref(index_port), ref(shared_directory));
-    PeerServer server(stoi(server_port), shared_directory);
-    thread tserver(&PeerServer::run, &server);
-    tadd.join(); tserver.join(); 
     return 0;
 }

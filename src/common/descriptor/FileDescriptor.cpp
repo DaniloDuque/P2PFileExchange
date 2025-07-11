@@ -1,5 +1,7 @@
 #pragma once
-#include "util.h"
+#define ll long long
+#include <sstream>
+using namespace std;
 
 struct FileDescriptor {
     ll hash1, hash2;

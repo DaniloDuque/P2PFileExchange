@@ -4,22 +4,22 @@
 #include "common/descriptor/FileDescriptor.cpp"
 using namespace std;
 
-template<typename derived, typename file_location>
+template<typename derived, typename Location>
 class CommonFileInfo {
 protected:
     const FileDescriptor descriptor{};
-    set<file_location> file_locations{};
+    set<Location> file_locations{};
     mutable shared_mutex infoMutex;
 
 public:
 
-    void knownAs(const file_location& info) {
+    void known_as(const Location& info) {
         unique_lock lock(infoMutex);
         file_locations.insert(info);
     }
 
-    CommonFileInfo(const FileDescriptor& descriptor, const file_location& location): descriptor(descriptor) {
-        knownAs(location);
+    CommonFileInfo(const FileDescriptor& descriptor, const Location& location): descriptor(descriptor) {
+        known_as(location);
     }
 
     CommonFileInfo() = default;
@@ -28,9 +28,9 @@ public:
     CommonFileInfo(CommonFileInfo&&) = delete;
     CommonFileInfo& operator=(CommonFileInfo&&) = delete;
 
-    ll getHash1() const { return descriptor.hash1; }
-    ll getHash2() const { return descriptor.hash2; }
-    ll getSize() const { return descriptor.size; }
+    ll get_first_hash() const { return descriptor.hash1; }
+    ll get_second_hash() const { return descriptor.hash2; }
+    ll get_file_size() const { return descriptor.size; }
 
     virtual ~CommonFileInfo() = default;
     
@@ -52,7 +52,7 @@ public:
         size_t sz = stoll(token);
         auto new_file_locations = derived(h1, h2, sz);
         while (getline(ss, token, ' ')) {
-            new_file_locations.knownAs(file_location::deserialize(token));
+            new_file_locations.knownAs(Location::deserialize(token));
         }
         return new_file_locations;
     }
@@ -65,11 +65,11 @@ public:
         return descriptor < other.descriptor;
     }
 
-    FileDescriptor getFileDescriptor() const {
+    FileDescriptor get_file_descriptor() const {
         return descriptor;
     }
 
-    shared_ptr<FileDescriptor> getFileDescriptorPtr() const {
+    shared_ptr<FileDescriptor> get_file_descriptor_ptr() const {
         return make_shared<FileDescriptor>(descriptor);
     }
 

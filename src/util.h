@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <set>
 #include <iomanip>
+#include "common/descriptor/SearchResult.cpp"
 
 #define ll long long
 #define uchar unsigned char
@@ -28,17 +29,10 @@ inline vector<string> split(const string& input, const char delimiter) {
     return result;
 }
 
-inline void printFileInfoTable(const string& data) {
-    istringstream ss(data);
-    string token;
-    cout << left << setw(20) << "File Name" << setw(10) << "Size" << endl;
-    cout << "---------------------------------------" << endl;
-    while (getline(ss, token, ' ')) {
-        string fileName;
-        string fileSize;
-        istringstream pairStream(token);
-        getline(pairStream, fileName, ',');
-        getline(pairStream, fileSize, ',');
-        cout << left << setw(20) << fileName << setw(10) << fileSize << endl;
+inline void print_file_info_table(const SearchResult& data) {
+    cout << left << setw(20) << "File Name" << setw(10) << "Size" << setw(10) << "hash1" << setw(10) << "hash2" << endl;
+    cout << "---------------------------------------------------------------------------------------" << endl;
+    for (auto & [filename, descriptor] : data.values) {
+        cout << left << setw(20) << filename << setw(10) << descriptor.size << setw(10) << descriptor.hash1 << setw(10) << descriptor.hash2 << endl;
     }
 }

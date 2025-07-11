@@ -4,18 +4,21 @@
 #include "logger/Logger.h"
 
 class TCPStream final : public ByteStream {
-    constexpr static size_t BUFFER_SIZE = 1024;
-    constexpr char END_OF_STREAM = '\x04';
-    constexpr string ACKNOWLEDGE = "ACK";
+    static constexpr size_t BUFFER_SIZE = 1024;
+    static constexpr char END_OF_STREAM = '\x04';
+    static constexpr auto ACKNOWLEDGE = "ACK";
+    static constexpr auto ERROR = "1";
+    static constexpr auto OK = "0";
 
-    string read(const int socket) override {
+    pair<bool, string> read(const int socket) override {
         string result;
         char buffer[BUFFER_SIZE] = {};
         while (true) {
             const ssize_t bytesRead = recv(socket, buffer, BUFFER_SIZE, 0);
             if (bytesRead < 0) {
-                logger.error("Error in read: " + string(strerror(errno)));
-                return "";
+                const string error = "Error in read: " + string(strerror(errno));
+                logger.error(error);
+                return {false, error};
             }
             if (bytesRead == 0) break;
             result.append(buffer, bytesRead);
@@ -24,12 +27,20 @@ class TCPStream final : public ByteStream {
                 break;
             }
         }
-        return result;
 
+        if (result.empty()) return {false, "Empty payload"};
+        const string status = to_string(result[0]);
+        string payload = result.substr(1);
+        if (status == OK) return {true, payload};
+        if (status == ERROR) return {false, payload};
+        const string error = "Invalid status prefix in message: " + status;
+        logger.error(error);
+        return {false, error};
     }
 
-    bool write(const int socket, const string& buffer) override {
-        const string package = buffer + END_OF_STREAM;
+
+    bool write(const bool success, const int socket, const string& buffer) override {
+        const string package = (success? OK : ERROR) + buffer + END_OF_STREAM;
         size_t totalBytesSent = 0;
         const size_t bufferSize = package.size();
         while (totalBytesSent < bufferSize) {
@@ -46,13 +57,12 @@ class TCPStream final : public ByteStream {
     }
 
     bool send_acknowledge(const int socket) override {
-        const string ack = ACKNOWLEDGE + END_OF_STREAM;
-        return write(socket, ack);
+        return write(true, socket, ACKNOWLEDGE);
     }
 
     bool receive_acknowledge(const int socket) override {
-        const string acknowledge = read(socket);
-        return acknowledge == ACKNOWLEDGE;
+        const auto [success, payload] = read(socket);
+        return success && payload == ACKNOWLEDGE;
     }
 
 };

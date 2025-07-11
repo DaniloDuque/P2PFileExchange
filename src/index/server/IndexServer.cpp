@@ -16,12 +16,12 @@ class IndexServer final : public TCPServer {
     FileIndex index;
     HeartbeatManager heartbeat;
 
-    void addPeer(const AddPeerDTO& dto) {
+    void add_peer(const AddPeerDTO& dto) {
         index.addPeer(dto);
         heartbeat.updatePeer(dto.peer);
     }
 
-    void removePeer(const RemovePeerDTO& dto) {
+    void remove_peer(const RemovePeerDTO& dto) {
         heartbeat.removePeer(dto.peer);
     }
 
@@ -33,25 +33,25 @@ class IndexServer final : public TCPServer {
         return index.find(descriptor);
     }
 
-    void handleAddPeer(const string& request, const int client_socket) {
+    void handleAddPeer(const string& request) {
         const AddPeerDTO new_peer = AddPeerDTO::deserialize(request);
         logger.info("New Peer indexing started - "  + new_peer.peer.ip + ":" + to_string(new_peer.peer.port));
-        addPeer(new_peer);
+        add_peer(new_peer);
     }
 
     void handleFileRequest(const string& request, const int client_socket) const {
         const auto [descriptor] = FileRequestDTO::deserialize(request);
         logger.info("Peer requested file - " + to_string(descriptor.hash1) + " " + to_string(descriptor.hash2) + " " + to_string(descriptor.size));
         const auto requested_file_info = search_file(descriptor);
-        string rsp = OK;
-        if (requested_file_info != nullptr) rsp += " " + requested_file_info->serialize();
-        stream->write(client_socket, rsp);
+        string rsp;
+        if (requested_file_info != nullptr) rsp = requested_file_info->serialize();
+        stream->write(true, client_socket, rsp);
     }
 
-    void handleRemovePeer(const string& request, const int client_socket) {
+    void handleRemovePeer(const string& request) {
         const auto dto = RemovePeerDTO::deserialize(request);
         logger.info("Peer removal started - " + dto.peer.ip + ":" + to_string(dto.peer.port));
-        removePeer(dto);
+        remove_peer(dto);
     }
 
     void handleFileSearch(const string& request, const int client_socket) const {
@@ -59,24 +59,24 @@ class IndexServer final : public TCPServer {
         logger.info("Searching for " + file_search_dto.filename + " in the network");
         const auto matches = find_matches(file_search_dto.filename);
         const SearchResultDTO dto(matches);
-        const string response = OK + " " + dto.serialize();
-        stream->write(client_socket, response);
+        stream->write(true, client_socket, dto.serialize());
     }
 
-    void handleClient(const int client_socket) override {
+    void handle_client(const int client_socket) override {
         logger.info("Request received!");
-        const string request = toLower(stream->read(client_socket));
+        const auto [status, payload] = stream->read(client_socket);
+        const string request = toLower(payload);
         if(request.empty()) return;
         const auto data = request.substr(2, request.size());
-        if (request[0] == ADD_PEER) handleAddPeer(data, client_socket);
+        if (request[0] == ADD_PEER) handleAddPeer(data);
         if (request[0] == FILE_REQUEST) handleFileRequest(data, client_socket);
-        if (request[0] == REMOVE_PEER) handleRemovePeer(data, client_socket);
+        if (request[0] == REMOVE_PEER) handleRemovePeer(data);
         if (request[0] == FILE_SEARCH) handleFileSearch(data, client_socket);
         close(client_socket);
     }
 
 public:
-    IndexServer(shared_ptr<ByteStream>& stream, const int port): TCPServer(stream, port) {}
+    IndexServer(const shared_ptr<ByteStream>& stream, const int port): TCPServer(stream, port) {}
     
     void run() override {
         heartbeat.setDeadPeerCallback([this](const PeerDescriptor& peer) {

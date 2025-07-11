@@ -12,7 +12,7 @@
 
 class TCPServer : public Server {
 public:
-    TCPServer(shared_ptr<ByteStream>& stream, const int port) : Server(stream, port) {}
+    TCPServer(const shared_ptr<ByteStream>& stream, const int port) : Server(stream, port) {}
 
     void run() override {
         const int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
@@ -60,7 +60,7 @@ public:
                 continue;
             }
 
-            std::thread(&TCPServer::handleClient, this, new_socket).detach();
+            std::thread(&TCPServer::handle_client, this, new_socket).detach();
         }
     }
     
