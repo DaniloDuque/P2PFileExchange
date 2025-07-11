@@ -2,7 +2,7 @@
 #include "Encoder.h"
 using namespace std;
 
-class Base64Encoder final : Encoder {
+class Base64Encoder final : public Encoder {
 public:
     string encode(const string& data) override {
         const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
