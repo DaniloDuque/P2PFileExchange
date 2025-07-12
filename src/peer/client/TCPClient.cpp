@@ -53,7 +53,6 @@ protected:
         return -1;
     }
 
-
     template<typename T>
     pair<bool, T> deserialize_response(const string &response) {
         if (response.empty()) return {false, T{}};

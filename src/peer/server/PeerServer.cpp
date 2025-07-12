@@ -24,9 +24,10 @@ class PeerServer final : public TCPServer {
             return;
         }
         fseek(file, request.start_byte, SEEK_SET);
-        vector<char> buffer(request.chunk_size);
+        vector<unsigned char> buffer(request.chunk_size);
         const size_t bytes_read = fread(buffer.data(), 1, request.chunk_size, file);
-        const string file_chunk = encoder->encode(string(buffer.data(), bytes_read));
+        const string binary_data(buffer.begin(), buffer.begin() + bytes_read);
+        const string file_chunk = encoder->encode(binary_data);
         stream->write(true, peerSocket, file_chunk);
         fclose(file);
     }
