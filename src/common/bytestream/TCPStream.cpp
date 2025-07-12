@@ -2,6 +2,7 @@
 #include "ByteStream.h"
 #include <sys/socket.h>
 #include "logger/Logger.h"
+#include <cstring>
 
 class TCPStream final : public ByteStream {
     static constexpr size_t BUFFER_SIZE = 1024;

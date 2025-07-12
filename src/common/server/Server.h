@@ -1,10 +1,11 @@
 #pragma once
 #include "bytestream/ByteStream.h"
+#include <memory>
 
 class Server {
 protected:
     const int port;
-    const shared_ptr<ByteStream> stream;
+    const std::shared_ptr<ByteStream> stream;
     virtual void handle_client(int) = 0;
 
 public:
