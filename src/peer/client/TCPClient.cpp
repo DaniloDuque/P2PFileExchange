@@ -66,30 +66,51 @@ protected:
     void download_file_chunk(const DownloadFileChunkDTO &dto, const PeerDescriptor &peer, const string &filename,
                              const size_t offset) {
         const int peerSocket = connect_to_server(peer);
-        if (peerSocket < 0) return;
+        if (peerSocket < 0) {
+            logger.error("Failed to connect to peer for chunk download");
+            return;
+        }
 
         const string finfo = dto.serialize();
-        stream->write(true, peerSocket, finfo);
+        if (!stream->write(true, peerSocket, finfo)) {
+            logger.error("Failed to send chunk request");
+            close(peerSocket);
+            return;
+        }
+        
         const auto [status, file_chunk] = stream->read(peerSocket);
-
         if (!status) {
             logger.error("Failed to read file chunk: " + file_chunk);
             close(peerSocket);
             return;
         }
 
-        const string decoded_file_chunk = encoder->decode(file_chunk);
-
-        const int fd = open(filename.c_str(), O_WRONLY);
-        if (fd < 0) {
-            logger.error("Error opening file for writing: " + filename);
+        if (file_chunk.empty()) {
+            logger.error("Received empty file chunk");
             close(peerSocket);
             return;
         }
 
-        if (const ssize_t bytesWritten = pwrite(fd, decoded_file_chunk.data(), decoded_file_chunk.size(), offset);
-            bytesWritten < 0) {
+        const string decoded_file_chunk = encoder->decode(file_chunk);
+        if (decoded_file_chunk.empty()) {
+            logger.error("Failed to decode file chunk");
+            close(peerSocket);
+            return;
+        }
+
+        const int fd = open(filename.c_str(), O_WRONLY);
+        if (fd < 0) {
+            logger.error("Error opening file for writing: " + filename + " - " + strerror(errno));
+            close(peerSocket);
+            return;
+        }
+
+        const ssize_t bytesWritten = pwrite(fd, decoded_file_chunk.data(), decoded_file_chunk.size(), offset);
+        if (bytesWritten < 0) {
             logger.error("Error in pwrite: " + string(strerror(errno)));
+        } else if (static_cast<size_t>(bytesWritten) != decoded_file_chunk.size()) {
+            logger.warn("Partial write: expected " + to_string(decoded_file_chunk.size()) + 
+                       " bytes, wrote " + to_string(bytesWritten));
         }
 
         close(fd);
@@ -191,18 +212,55 @@ public:
     }
 
     bool download_file(const FileInfo &info, const string &filename) override {
+        if (filename.empty()) {
+            logger.error("Empty filename provided for download");
+            return false;
+        }
+        
         const string directory = output_directory + "/" + to_string(peer.port);
         const string output_file = directory + "/" + filename;
         const size_t numPeers = info.getNumberOfPeersWithFile();
         const size_t totalSize = info.get_file_size();
+        
+        if (numPeers == 0) {
+            logger.error("No peers available for file download");
+            return false;
+        }
+        
+        if (totalSize == 0) {
+            logger.error("File has zero size");
+            return false;
+        }
+        
         const size_t chunkSize = totalSize / numPeers;
         size_t startByte = 0, mod = totalSize % numPeers;
 
-        if (!filesystem::exists(directory))
-            filesystem::create_directory(directory); {
+        try {
+            if (!filesystem::exists(directory)) {
+                filesystem::create_directories(directory);
+            }
+            
             ofstream f(output_file, ios::binary | ios::out);
+            if (!f.is_open()) {
+                logger.error("Failed to create output file: " + output_file);
+                return false;
+            }
+            
             f.seekp(totalSize - 1);
+            if (f.fail()) {
+                logger.error("Failed to seek in output file");
+                return false;
+            }
+            
             f.write("", 1);
+            if (f.fail()) {
+                logger.error("Failed to write to output file");
+                return false;
+            }
+            f.close();
+        } catch (const filesystem::filesystem_error& ex) {
+            logger.error("Filesystem error during download setup: " + string(ex.what()));
+            return false;
         }
 
         vector<thread> threads;

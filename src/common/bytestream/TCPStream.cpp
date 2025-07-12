@@ -12,11 +12,14 @@ class TCPStream final : public ByteStream {
     static constexpr auto OK = "OK";
 
     pair<bool, string> read(const int socket) override {
+        if (socket < 0) return {false, "Invalid socket"};
+        
         string result;
         char buffer[BUFFER_SIZE] = {};
         while (true) {
             const ssize_t bytesRead = recv(socket, buffer, BUFFER_SIZE, 0);
             if (bytesRead < 0) {
+                if (errno == EAGAIN || errno == EWOULDBLOCK) continue;
                 const string error = "Error in read: " + string(strerror(errno));
                 logger.error(error);
                 return {false, error};
@@ -41,6 +44,11 @@ class TCPStream final : public ByteStream {
 
 
     bool write(const bool success, const int socket, const string &buffer) override {
+        if (socket < 0) {
+            logger.error("Invalid socket for write");
+            return false;
+        }
+        
         const string package = (success ? OK : ERROR) + buffer + END_OF_STREAM;
         size_t totalBytesSent = 0;
         const size_t bufferSize = package.size();
@@ -48,6 +56,7 @@ class TCPStream final : public ByteStream {
             const ssize_t bytesToSend = min(bufferSize - totalBytesSent, BUFFER_SIZE);
             const ssize_t bytesSent = send(socket, &package[totalBytesSent], bytesToSend, 0);
             if (bytesSent < 0) {
+                if (errno == EAGAIN || errno == EWOULDBLOCK) continue;
                 logger.error("Error in write: " + string(strerror(errno)));
                 return false;
             }
