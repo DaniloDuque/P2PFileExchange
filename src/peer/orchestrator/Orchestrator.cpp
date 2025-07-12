@@ -1,4 +1,3 @@
-#pragma once
 #include "Orchestrator.h"
 #include "client/TCPClient.cpp"
 #include "server/PeerServer.cpp"

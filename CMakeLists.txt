@@ -22,13 +22,23 @@ add_executable(index_server
     src/logger/ConsoleLogger.cpp
 )
 
+# Find GTK3 for GUI
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
+
 # Peer Executable
 add_executable(peer
     src/peer/main.cpp
+    src/peer/ui/PeerGUI.cpp
     src/logger/ConsoleLogger.cpp
     src/peer/indexer/FileIndexer.cpp
     src/peer/hasher/FileHasher.cpp
+    src/peer/orchestrator/Orchestrator.cpp
 )
 
 target_link_libraries(index_server m)
-target_link_libraries(peer m)
+target_include_directories(peer PRIVATE ${GTK3_INCLUDE_DIRS})
+target_compile_options(peer PRIVATE ${GTK3_CFLAGS_OTHER})
+target_link_directories(peer PRIVATE ${GTK3_LIBRARY_DIRS})
+target_link_libraries(peer ${GTK3_LIBRARIES} m)
+target_compile_options(peer PRIVATE -Wno-unused-parameter)
