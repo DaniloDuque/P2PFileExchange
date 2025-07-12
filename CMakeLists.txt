@@ -14,6 +14,7 @@ include_directories(src/peer)
 include_directories(src/peer/client)
 include_directories(src/peer/server)
 include_directories(src/peer/server/hash)
+include_directories(src/peer/orchestrator)
 
 # Index Server Executable
 add_executable(index_server
@@ -25,6 +26,8 @@ add_executable(index_server
 add_executable(peer
     src/peer/main.cpp
     src/logger/ConsoleLogger.cpp
+    src/peer/indexer/FileIndexer.cpp
+    src/peer/hasher/FileHasher.cpp
 )
 
 target_link_libraries(index_server m)

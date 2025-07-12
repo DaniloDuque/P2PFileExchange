@@ -30,9 +30,9 @@ inline vector<string> split(const string& input, const char delimiter) {
 }
 
 inline void print_file_info_table(const SearchResult& data) {
-    cout << left << setw(20) << "File Name" << setw(10) << "Size" << setw(10) << "hash1" << setw(10) << "hash2" << endl;
-    cout << "---------------------------------------------------------------------------------------" << endl;
-    for (auto & [filename, descriptor] : data.values) {
-        cout << left << setw(20) << filename << setw(10) << descriptor.size << setw(10) << descriptor.hash1 << setw(10) << descriptor.hash2 << endl;
+    cout << left << setw(20) << "File Name" << setw(12) << "Size" << setw(22) << "hash1" << setw(22) << "hash2" << endl;
+    cout << "------------------------------------------------------------------------------" << endl;
+    for (const auto & [filename, descriptor] : data.values) {
+        cout << left << setw(20) << filename << setw(12) << descriptor.size << setw(22) << descriptor.hash1 << setw(22) << descriptor.hash2 << endl;
     }
 }

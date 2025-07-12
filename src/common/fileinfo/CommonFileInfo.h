@@ -12,7 +12,6 @@ protected:
     mutable shared_mutex infoMutex;
 
 public:
-
     void known_as(const Location& info) {
         unique_lock lock(infoMutex);
         file_locations.insert(info);
@@ -22,11 +21,13 @@ public:
         known_as(location);
     }
 
+    CommonFileInfo(const FileDescriptor& descriptor): descriptor(descriptor) {}
+
     CommonFileInfo() = default;
     CommonFileInfo(const CommonFileInfo&) = delete;
     CommonFileInfo& operator=(const CommonFileInfo&) = delete;
-    CommonFileInfo(CommonFileInfo&&) = delete;
-    CommonFileInfo& operator=(CommonFileInfo&&) = delete;
+    CommonFileInfo(CommonFileInfo&&) = default;
+    CommonFileInfo& operator=(CommonFileInfo&&) = default;
 
     ll get_first_hash() const { return descriptor.hash1; }
     ll get_second_hash() const { return descriptor.hash2; }
@@ -50,11 +51,12 @@ public:
         ll h2 = stoll(token); 
         getline(ss, token, ' '); 
         size_t sz = stoll(token);
-        auto new_file_locations = derived(h1, h2, sz);
+        derived new_file_locations(h1, h2, sz);
         while (getline(ss, token, ' ')) {
-            new_file_locations.knownAs(Location::deserialize(token));
+            if (!token.empty())
+                new_file_locations.known_as(Location::deserialize(token));
         }
-        return new_file_locations;
+        return std::move(new_file_locations);
     }
 
     bool operator==(const CommonFileInfo& other) const {

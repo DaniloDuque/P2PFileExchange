@@ -7,8 +7,8 @@ class TCPStream final : public ByteStream {
     static constexpr size_t BUFFER_SIZE = 1024;
     static constexpr char END_OF_STREAM = '\x04';
     static constexpr auto ACKNOWLEDGE = "ACK";
-    static constexpr auto ERROR = "1";
-    static constexpr auto OK = "0";
+    static constexpr auto ERROR = "ER";
+    static constexpr auto OK = "OK";
 
     pair<bool, string> read(const int socket) override {
         string result;
@@ -29,8 +29,8 @@ class TCPStream final : public ByteStream {
         }
 
         if (result.empty()) return {false, "Empty payload"};
-        const string status = to_string(result[0]);
-        string payload = result.substr(1);
+        const string status = result.substr(0, 2);
+        string payload = result.substr(2);
         if (status == OK) return {true, payload};
         if (status == ERROR) return {false, payload};
         const string error = "Invalid status prefix in message: " + status;

@@ -7,7 +7,7 @@ class FileInfo final : public CommonFileInfo<FileInfo, FileLocation> {
 public:
     FileInfo() = default;
     FileInfo(const FileDescriptor& descriptor, const FileLocation& location) : CommonFileInfo(descriptor, location) {}
-    FileInfo(const ll h1, const ll h2, const size_t sz) : CommonFileInfo(FileDescriptor(h1, h2, sz), FileLocation(PeerDescriptor("", 0), "")) {}
+    FileInfo(const ll h1, const ll h2, const size_t sz) : CommonFileInfo(FileDescriptor(h1, h2, sz)) {}
 
     set<FileLocation> getFileLocation() const {
         shared_lock lock(infoMutex);

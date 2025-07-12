@@ -23,10 +23,10 @@ class PeerServer final : public TCPServer {
             logger.error("Error opening file: " + filePath);
             return;
         }
-        fseek(file, request.startByte, SEEK_SET);
-        char buffer[request.chunkSize] = {};
-        fread(buffer, 1, request.chunkSize, file);
-        const string file_chunk = encoder->encode(string(buffer, request.chunkSize));
+        fseek(file, request.start_byte, SEEK_SET);
+        vector<char> buffer(request.chunk_size);
+        const size_t bytes_read = fread(buffer.data(), 1, request.chunk_size, file);
+        const string file_chunk = encoder->encode(string(buffer.data(), bytes_read));
         stream->write(true, peerSocket, file_chunk);
         fclose(file);
     }

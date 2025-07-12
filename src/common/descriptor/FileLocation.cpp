@@ -24,10 +24,12 @@ struct FileLocation {
 
     static FileLocation deserialize(const string& data) {
         istringstream ss(data);
-        string filename, peer_data;
+        string filename, ip, port_str;
         getline(ss, filename, ',');
-        getline(ss, peer_data);
-        return FileLocation(PeerDescriptor::deserialize(peer_data), filename);
+        getline(ss, ip, ',');
+        getline(ss, port_str, ',');
+        const int port = stoi(port_str);
+        return FileLocation(PeerDescriptor(ip, port), filename);
     }
 
 };

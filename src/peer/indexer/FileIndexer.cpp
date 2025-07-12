@@ -1,4 +1,3 @@
-#pragma once
 #include "FileIndexer.h"
 #include "logger/Logger.h"
 
@@ -21,10 +20,9 @@ vector<unsigned char> FileIndexer::read_file(const filesystem::path &path) const
     return buffer;
 }
 
-
-vector<IndexedFileDescriptor> FileIndexer::index_files(const string& path) const {
+set<IndexedFileDescriptor> FileIndexer::index_files(const string& path) const {
     const std::filesystem::path sandbox{path};
-    vector<IndexedFileDescriptor> res;
+    set<IndexedFileDescriptor> res;
 
     if (!std::filesystem::exists(sandbox)) {
         logger.error("Directory does not exist: " + path);
@@ -43,7 +41,7 @@ vector<IndexedFileDescriptor> FileIndexer::index_files(const string& path) const
         const auto h1 = hasher.get_first_hash();
         const auto h2 = hasher.get_second_hash();
         logger.info("Indexing file: " + name);
-        res.emplace_back(FileDescriptor(h1, h2, hasher.get_file_size()), name);
+        res.emplace(FileDescriptor(h1, h2, hasher.get_file_size()), name);
     }
     return res;
 }

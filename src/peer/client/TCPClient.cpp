@@ -15,8 +15,8 @@ using namespace std;
 
 class TCPClient final : public Client {
 protected:
-    constexpr int MAX_RETRIES = 5;
-    constexpr int RETRY_DELAY_MS = 200;
+    static constexpr int MAX_RETRIES = 5;
+    static constexpr int RETRY_DELAY_MS = 200;
     int connect_to_server(const PeerDescriptor& peer) override {
         for (int attempt = 1; attempt <= MAX_RETRIES; ++attempt) {
             logger.info("Connecting to " + peer.ip + ":" + to_string(peer.port) + " (attempt " + to_string(attempt) + ")");
@@ -56,15 +56,24 @@ protected:
 
     template<typename T>
     pair<bool, T> deserialize_response(const string &response) {
-        if (response.empty() || response[0]+"" != OK) return {false, T()};
-        return {true, T::deserialize(response.substr(2))};
+        if (response.empty()) return {false, T{}};
+        return {true, T::deserialize(response)};
     }
 
     void download_file_chunk(const DownloadFileChunkDTO& dto, const PeerDescriptor& peer, const string& filename, const size_t offset) {
         const int peerSocket = connect_to_server(peer);
+        if (peerSocket < 0) return;
+        
         const string finfo = dto.serialize();
         stream->write(true, peerSocket, finfo);
         const auto [status, file_chunk] = stream->read(peerSocket);
+        
+        if (!status) {
+            logger.error("Failed to read file chunk: " + file_chunk);
+            close(peerSocket);
+            return;
+        }
+        
         const string decoded_file_chunk = encoder->decode(file_chunk);
 
         const int fd = open(filename.c_str(), O_WRONLY);
@@ -88,8 +97,8 @@ public:
                   const PeerDescriptor& peer,
                   const PeerDescriptor& server,
                   const PeerDescriptor& index,
-                  const string& shared_directory)
-            : Client(stream, encoder, peer, server, index, shared_directory) {}
+                  const string& output_directory)
+            : Client(stream, encoder, peer, server, index, output_directory) {}
 
     ~TCPClient() override = default;
 
@@ -99,7 +108,7 @@ public:
 
         const AddPeerDTO dto(server, shared_files);
 
-        if (const string package = to_string(ADD_PEER) + " " + dto.serialize(); !stream->write(true, clientSocket, package)) {
+        if (const string package = string(1, ADD_PEER) + " " + dto.serialize(); !stream->write(true, clientSocket, package)) {
             logger.error("Error sending the package");
             close(clientSocket);
             return false;
@@ -117,7 +126,7 @@ public:
             return false;
         }
         const RemovePeerDTO dto(server);
-        const string request = to_string(REMOVE_PEER) + " " + dto.serialize();
+        const string request = string(1, REMOVE_PEER) + " " + dto.serialize();
         stream->write(true, index_socket, request);
         close(index_socket);
         logger.info("Peer removal request sent to index server");
@@ -128,10 +137,10 @@ public:
         const auto index_socket = connect_to_server(index);
         if (index_socket < 0) {
             logger.error("Failed to connect to index server");
-            return make_pair(false, SearchResult());
+            return {false, SearchResult{}};
         }
         const FileSearchDTO dto(peer, filename);
-        const string request = to_string(FILE_SEARCH) + " " + dto.serialize();
+        const string request = string(1, FILE_SEARCH) + " " + dto.serialize();
         stream->write(true, index_socket, request);
         logger.info("File search request sent to index server");
         const auto [status, payload] = stream->read(index_socket);
@@ -140,20 +149,36 @@ public:
         return deserialize_response<SearchResult>(payload);
     }
 
-    pair<bool, FileInfo> request_file(const FileDescriptor& descriptor) override {
+    shared_ptr<FileInfo> request_file(const FileDescriptor& descriptor) override {
         const auto index_socket = connect_to_server(index);
         if (index_socket < 0) {
             logger.error("Failed to connect to index server");
-            return make_pair(false, FileInfo());
+            return nullptr;
         }
         const FileRequestDTO dto(descriptor);
-        const string request = to_string(FILE_REQUEST) + " " + dto.serialize();
+        const string request = string(1, FILE_REQUEST) + " " + dto.serialize();
         stream->write(true, index_socket, request);
         logger.info("File request sent to index server");
         const auto [status, payload] = stream->read(index_socket);
         close(index_socket);
         logger.info("File request response received from index server");
-        return deserialize_response<FileInfo>(payload);
+        if (payload.empty()) return nullptr;
+        
+        istringstream ss(payload);
+        string token;
+        getline(ss, token, ',');
+        ll h1 = stoll(token); 
+        getline(ss, token, ',');
+        ll h2 = stoll(token); 
+        getline(ss, token, ' '); 
+        size_t sz = stoll(token);
+        
+        auto file_info = make_shared<FileInfo>(h1, h2, sz);
+        while (getline(ss, token, ' ')) {
+            if (!token.empty())
+                file_info->known_as(FileLocation::deserialize(token));
+        }
+        return file_info;
     }
 
     bool download_file(const FileInfo& info, const string& filename) override {

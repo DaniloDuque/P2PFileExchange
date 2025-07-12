@@ -1,4 +1,4 @@
-SRC = main.cpp ../logger/ConsoleLogger.cpp
+SRC = main.cpp ../logger/ConsoleLogger.cpp hasher/FileHasher.cpp indexer/FileIndexer.cpp orchestrator/Orchestrator.cpp
 
 EXEC = a.out
 
@@ -11,7 +11,7 @@ $(EXEC): $(SRC)
 	$(CC) $(CFLAGS) -o $(EXEC) $(SRC) -lm
 
 run: $(EXEC)
-	./$(EXEC) 8989 127.0.0.1 127.0.0.1 8585 ../../shared/Peer1
+	./$(EXEC) 8989 8990 127.0.0.1 127.0.0.1 8585 ../../shared/Peer1
 
 clean:
 	rm -f $(EXEC) 

@@ -4,13 +4,13 @@
 
 struct DownloadFileChunkDTO {
     const FileDescriptor file;
-    const size_t startByte, chunkSize;
+    const size_t start_byte, chunk_size;
 
     DownloadFileChunkDTO() = delete;
-    DownloadFileChunkDTO(const FileDescriptor& file, const size_t startByte, const size_t chunkSize) : file(file), startByte(startByte), chunkSize(chunkSize) {}
+    DownloadFileChunkDTO(const FileDescriptor& file, const size_t startByte, const size_t chunkSize) : file(file), start_byte(startByte), chunk_size(chunkSize) {}
 
     string serialize() const {
-        return to_string(startByte) + ',' + to_string(chunkSize) + ',' + file.serialize();
+        return to_string(start_byte) + ',' + to_string(chunk_size) + ',' + file.serialize();
     }
 
     static DownloadFileChunkDTO deserialize(const string& data) {

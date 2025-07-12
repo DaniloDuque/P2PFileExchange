@@ -28,13 +28,13 @@ public:
            const PeerDescriptor& server,
            const PeerDescriptor& index,
            const string& shared_directory)
-        : stream(move(stream)), encoder(move(encoder)), peer(peer), server(server), index(index), output_directory(shared_directory) {}
+        : stream(std::move(stream)), encoder(std::move(encoder)), peer(peer), server(server), index(index), output_directory(shared_directory) {}
 
     virtual ~Client() = default;
 
     virtual bool add_peer(const set<IndexedFileDescriptor>&) = 0;
     virtual bool remove_peer() = 0;
     virtual pair<bool, SearchResult> search_file(const string&) = 0;
-    virtual pair<bool, FileInfo> request_file(const FileDescriptor&) = 0;
+    virtual shared_ptr<FileInfo> request_file(const FileDescriptor&) = 0;
     virtual bool download_file(const FileInfo&, const string&) = 0;
 };
