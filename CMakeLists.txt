@@ -10,18 +10,25 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include_directories(src)
 include_directories(src/common)
 include_directories(src/common/dto)
+include_directories(src/common/bytestream)
+include_directories(src/common/descriptor)
+include_directories(src/common/server)
 include_directories(src/index)
 include_directories(src/logger)
 include_directories(src/peer)
 include_directories(src/peer/client)
 include_directories(src/peer/server)
 include_directories(src/peer/server/hash)
+include_directories(src/peer/ui)
+include_directories(src/peer/indexer)
+include_directories(src/peer/hasher)
+include_directories(src/peer/encoder)
 include_directories(src/peer/orchestrator)
 
 # Index Server Executable
 add_executable(index_server
-    src/index/main.cpp
-    src/logger/ConsoleLogger.cpp
+        src/index/main.cpp
+        src/logger/ConsoleLogger.cpp
 )
 
 # Find GTK3 for GUI
@@ -30,12 +37,12 @@ pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 
 # Peer Executable
 add_executable(peer
-    src/peer/main.cpp
-    src/peer/ui/PeerGUI.cpp
-    src/logger/ConsoleLogger.cpp
-    src/peer/indexer/FileIndexer.cpp
-    src/peer/hasher/FileHasher.cpp
-    src/peer/orchestrator/Orchestrator.cpp
+        src/peer/main.cpp
+        src/peer/ui/PeerGUI.cpp
+        src/logger/ConsoleLogger.cpp
+        src/peer/indexer/FileIndexer.cpp
+        src/peer/hasher/FileHasher.cpp
+        src/peer/orchestrator/Orchestrator.cpp
 )
 
 target_link_libraries(index_server m)

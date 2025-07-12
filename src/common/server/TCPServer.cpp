@@ -1,7 +1,7 @@
 #pragma once
-#include "Server.h"
-#include "common/bytestream/TCPStream.cpp"
-#include "logger/Logger.h"
+#include <Server.h>
+#include <common/bytestream/TCPStream.cpp>
+#include <logger/Logger.h>
 #include <thread>
 #include <cstring>
 #include <unistd.h>
@@ -9,15 +9,16 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <atomic>
-#include "constants.h"
+#include <constants.h>
 
 class TCPServer : public Server {
     std::atomic<bool> is_running = false;
     int serverSocket = -1;
 
 public:
-    TCPServer(const shared_ptr<ByteStream>& stream, const int port)
-        : Server(stream, port) {}
+    TCPServer(const shared_ptr<ByteStream> &stream, const int port)
+        : Server(stream, port) {
+    }
 
     void run() override {
         serverSocket = socket(AF_INET, SOCK_STREAM, 0);

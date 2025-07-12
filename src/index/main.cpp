@@ -1,6 +1,6 @@
-#include "server/IndexServer.cpp"
-#include "util.h"
-#include "logger/Logger.h"
+#include <server/IndexServer.cpp>
+#include <util.h>
+#include <logger/Logger.h>
 
 int main(const int argc, char const *argv[]) {
     if (argc != 2) {

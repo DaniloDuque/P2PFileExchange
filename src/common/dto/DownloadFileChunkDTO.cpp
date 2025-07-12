@@ -1,6 +1,6 @@
 #pragma once
-#include "util.h"
-#include "common/descriptor/FileDescriptor.cpp"
+#include <util.h>
+#include <common/descriptor/FileDescriptor.cpp>
 
 struct DownloadFileChunkDTO {
     const FileDescriptor file;

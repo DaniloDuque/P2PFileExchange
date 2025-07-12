@@ -1,19 +1,21 @@
 #pragma once
-#include "util.h"
-#include "common/descriptor/PeerDescriptor.cpp"
+#include <util.h>
+#include <common/descriptor/PeerDescriptor.cpp>
 
 struct FileSearchDTO {
     const PeerDescriptor peer;
     const string filename;
 
     FileSearchDTO() = delete;
-    FileSearchDTO(const PeerDescriptor& peer, const string& filename) : peer(peer), filename(filename) {}
+
+    FileSearchDTO(const PeerDescriptor &peer, const string &filename) : peer(peer), filename(filename) {
+    }
 
     string serialize() const {
         return filename + ',' + peer.serialize();
     }
 
-    static FileSearchDTO deserialize(const string& data) {
+    static FileSearchDTO deserialize(const string &data) {
         istringstream ss(data);
         string filename, ip, token;
 
@@ -24,5 +26,4 @@ struct FileSearchDTO {
 
         return FileSearchDTO(PeerDescriptor(ip, port), filename);
     }
-
 };

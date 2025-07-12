@@ -1,5 +1,5 @@
-#include "FileIndexer.h"
-#include "logger/Logger.h"
+#include <FileIndexer.h>
+#include <logger/Logger.h>
 
 vector<unsigned char> FileIndexer::read_file(const filesystem::path &path) const {
     ifstream file(path, ios::binary);
@@ -14,13 +14,13 @@ vector<unsigned char> FileIndexer::read_file(const filesystem::path &path) const
     file.seekg(0, ios::beg);
 
     buffer.resize(size);
-    file.read(reinterpret_cast<char*>(buffer.data()), size);
+    file.read(reinterpret_cast<char *>(buffer.data()), size);
     file.close();
 
     return buffer;
 }
 
-set<IndexedFileDescriptor> FileIndexer::index_files(const string& path) const {
+set<IndexedFileDescriptor> FileIndexer::index_files(const string &path) const {
     const std::filesystem::path sandbox{path};
     set<IndexedFileDescriptor> res;
 
@@ -34,7 +34,7 @@ set<IndexedFileDescriptor> FileIndexer::index_files(const string& path) const {
         return res;
     }
 
-    for(auto const& dir_entry : std::filesystem::directory_iterator(sandbox)) {
+    for (auto const &dir_entry: std::filesystem::directory_iterator(sandbox)) {
         string name = dir_entry.path().filename();
         auto file_binary = read_file(dir_entry.path());
         hasher.set_file(file_binary);

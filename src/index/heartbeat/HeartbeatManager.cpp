@@ -1,5 +1,5 @@
 #pragma once
-#include "util.h"
+#include <util.h>
 #include <chrono>
 #include <thread>
 #include <atomic>
@@ -12,7 +12,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-#include "constants.h"
+#include <constants.h>
 using namespace std;
 
 // Use the same mutex as the index
@@ -21,11 +21,11 @@ class HeartbeatManager {
     mutable mutex peerMutex;
     atomic<bool> running{false};
     thread heartbeatThread;
-    const chrono::seconds HEARTBEAT_INTERVAL{ INDEX_HEARTBEAT_INTERVAL };
-    const chrono::seconds PEER_TIMEOUT{INDEX_PEER_TIMEOUT };
-    function<void(const PeerDescriptor&)> onPeerDead;
+    const chrono::seconds HEARTBEAT_INTERVAL{INDEX_HEARTBEAT_INTERVAL};
+    const chrono::seconds PEER_TIMEOUT{INDEX_PEER_TIMEOUT};
+    function<void(const PeerDescriptor &)> onPeerDead;
 
-    bool pingPeer(const PeerDescriptor& descriptor) const {
+    bool pingPeer(const PeerDescriptor &descriptor) const {
         const int sock = socket(AF_INET, SOCK_STREAM, 0);
         if (sock < 0) return false;
 
@@ -50,13 +50,13 @@ class HeartbeatManager {
             auto now = chrono::steady_clock::now(); {
                 vector<PeerDescriptor> deadPeers;
                 lock_guard lock(peerMutex);
-                for (auto& [peer, lastSeen] : peerLastSeen) {
+                for (auto &[peer, lastSeen]: peerLastSeen) {
                     if (now - lastSeen <= PEER_TIMEOUT) continue;
                     if (!pingPeer(peer)) deadPeers.push_back(peer);
                     else peerLastSeen[peer] = now;
                 }
 
-                for (auto& peer : deadPeers) {
+                for (auto &peer: deadPeers) {
                     peerLastSeen.erase(peer);
                     if (onPeerDead) onPeerDead(peer);
                     logger.warn("Removed dead peer: " + peer.ip + ":" + to_string(peer.port));
@@ -68,7 +68,7 @@ class HeartbeatManager {
     }
 
 public:
-    void setDeadPeerCallback(const function<void(const PeerDescriptor&)> &callback) {
+    void setDeadPeerCallback(const function<void(const PeerDescriptor &)> &callback) {
         onPeerDead = callback;
     }
 
@@ -82,12 +82,12 @@ public:
         if (heartbeatThread.joinable()) heartbeatThread.join();
     }
 
-    void updatePeer(const PeerDescriptor& descriptor) {
+    void updatePeer(const PeerDescriptor &descriptor) {
         lock_guard lock(peerMutex);
         peerLastSeen[descriptor] = chrono::steady_clock::now();
     }
 
-    void removePeer(const PeerDescriptor& descriptor) {
+    void removePeer(const PeerDescriptor &descriptor) {
         lock_guard lock(peerMutex);
         peerLastSeen.erase(descriptor);
         if (onPeerDead) onPeerDead(descriptor);

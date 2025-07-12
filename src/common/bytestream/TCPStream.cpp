@@ -1,7 +1,7 @@
 #pragma once
-#include "ByteStream.h"
+#include <ByteStream.h>
 #include <sys/socket.h>
-#include "logger/Logger.h"
+#include <logger/Logger.h>
 #include <cstring>
 
 class TCPStream final : public ByteStream {
@@ -40,8 +40,8 @@ class TCPStream final : public ByteStream {
     }
 
 
-    bool write(const bool success, const int socket, const string& buffer) override {
-        const string package = (success? OK : ERROR) + buffer + END_OF_STREAM;
+    bool write(const bool success, const int socket, const string &buffer) override {
+        const string package = (success ? OK : ERROR) + buffer + END_OF_STREAM;
         size_t totalBytesSent = 0;
         const size_t bufferSize = package.size();
         while (totalBytesSent < bufferSize) {
@@ -54,7 +54,6 @@ class TCPStream final : public ByteStream {
             totalBytesSent += bytesSent;
         }
         return true;
-
     }
 
     bool send_acknowledge(const int socket) override {
@@ -65,5 +64,4 @@ class TCPStream final : public ByteStream {
         const auto [success, payload] = read(socket);
         return success && payload == ACKNOWLEDGE;
     }
-
 };

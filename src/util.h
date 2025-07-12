@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <set>
 #include <iomanip>
-#include "common/descriptor/SearchResult.cpp"
+#include <common/descriptor/SearchResult.cpp>
 
 #define ll long long
 #define uchar unsigned char
@@ -21,7 +21,7 @@ inline string toLower(string s) {
     return s;
 }
 
-inline vector<string> split(const string& input, const char delimiter) {
+inline vector<string> split(const string &input, const char delimiter) {
     vector<string> result;
     stringstream ss(input);
     string item;
@@ -29,10 +29,11 @@ inline vector<string> split(const string& input, const char delimiter) {
     return result;
 }
 
-inline void print_file_info_table(const SearchResult& data) {
+inline void print_file_info_table(const SearchResult &data) {
     cout << left << setw(20) << "File Name" << setw(12) << "Size" << setw(22) << "hash1" << setw(22) << "hash2" << endl;
     cout << "------------------------------------------------------------------------------" << endl;
-    for (const auto & [filename, descriptor] : data.values) {
-        cout << left << setw(20) << filename << setw(12) << descriptor.size << setw(22) << descriptor.hash1 << setw(22) << descriptor.hash2 << endl;
+    for (const auto &[filename, descriptor]: data.values) {
+        cout << left << setw(20) << filename << setw(12) << descriptor.size << setw(22) << descriptor.hash1 << setw(22)
+                << descriptor.hash2 << endl;
     }
 }

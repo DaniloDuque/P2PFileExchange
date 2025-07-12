@@ -1,9 +1,9 @@
 #pragma once
-#include "index/file/FileInfo.cpp"
-#include "common/descriptor/FileDescriptor.cpp"
-#include "common/descriptor/FileLocation.cpp"
-#include "common/descriptor/SearchResult.cpp"
-#include "dto/AddPeerDTO.cpp"
+#include <index/file/FileInfo.cpp>
+#include <common/descriptor/FileDescriptor.cpp>
+#include <common/descriptor/FileLocation.cpp>
+#include <common/descriptor/SearchResult.cpp>
+#include <dto/AddPeerDTO.cpp>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -11,21 +11,21 @@
 #include <shared_mutex>
 
 class FileIndex {
-    map<FileDescriptor, shared_ptr<FileInfo>> info;
+    map<FileDescriptor, shared_ptr<FileInfo> > info;
     mutable shared_mutex indexMutex;
 
 public:
-    SearchResult find(const string& alias) const {
+    SearchResult find(const string &alias) const {
         shared_lock lock(indexMutex);
         SearchResult rs;
         for (const auto &val: info | views::values) {
-            if(string match = val->findMatch(alias); !match.empty())
+            if (string match = val->findMatch(alias); !match.empty())
                 rs.values.emplace_back(match, val->get_file_descriptor());
         }
         return rs;
     }
 
-    shared_ptr<FileInfo> find(const FileDescriptor& descriptor) const {
+    shared_ptr<FileInfo> find(const FileDescriptor &descriptor) const {
         shared_lock lock(indexMutex);
         if (const auto it = info.find(descriptor); it != info.end()) {
             return it->second;
@@ -33,12 +33,12 @@ public:
         return nullptr;
     }
 
-    void addPeer(const AddPeerDTO& peer) {
+    void addPeer(const AddPeerDTO &peer) {
         unique_lock lock(indexMutex);
-        for (auto &pfs : peer.indexed_files) {
+        for (auto &pfs: peer.indexed_files) {
             auto key = pfs.file;
             auto value = FileLocation(peer.peer, pfs.filename);
-            if (auto it = info.find(key); it!=info.end()) {
+            if (auto it = info.find(key); it != info.end()) {
                 it->second->known_as(value);
                 continue;
             }
@@ -46,7 +46,7 @@ public:
         }
     }
 
-    void removePeer(const PeerDescriptor& peer) {
+    void removePeer(const PeerDescriptor &peer) {
         unique_lock lock(indexMutex);
         for (auto it = info.begin(); it != info.end();) {
             it->second->removePeer(peer);
@@ -55,4 +55,3 @@ public:
         }
     }
 };
-

@@ -1,14 +1,14 @@
 #pragma once
-#include "Encoder.h"
+#include <Encoder.h>
 using namespace std;
 
 class Base64Encoder final : public Encoder {
 public:
-    string encode(const string& data) override {
+    string encode(const string &data) override {
         const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
         string result;
         int val = 0, valb = -6;
-        for (unsigned char c : data) {
+        for (unsigned char c: data) {
             val = (val << 8) + c;
             valb += 8;
             while (valb >= 0) {
@@ -21,11 +21,11 @@ public:
         return result;
     }
 
-    string decode(const string& data) override {
+    string decode(const string &data) override {
         const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
         string result;
         int val = 0, valb = -8;
-        for (char c : data) {
+        for (char c: data) {
             if (c == '=') break;
             const auto pos = chars.find(c);
             if (pos == string::npos) continue;
@@ -38,5 +38,4 @@ public:
         }
         return result;
     }
-
 };

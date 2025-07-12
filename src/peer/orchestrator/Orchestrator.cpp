@@ -1,13 +1,13 @@
-#include "Orchestrator.h"
-#include "client/TCPClient.cpp"
-#include "server/PeerServer.cpp"
-#include "encoder/Base64Encoder.cpp"
-#include "common/bytestream/TCPStream.cpp"
+#include <Orchestrator.h>
+#include <client/TCPClient.cpp>
+#include <server/PeerServer.cpp>
+#include <encoder/Base64Encoder.cpp>
+#include <common/bytestream/TCPStream.cpp>
 
-Orchestrator::Orchestrator(const string& local_ip, const int server_port,
-                           const int client_port, const string& index_ip,
-                           const int index_port, const string& shared_directory,
-                           const string& output_directory) {
+Orchestrator::Orchestrator(const string &local_ip, const int server_port,
+                           const int client_port, const string &index_ip,
+                           const int index_port, const string &shared_directory,
+                           const string &output_directory) {
     const auto peer_desc = PeerDescriptor(local_ip, client_port);
     const auto server_desc = PeerDescriptor(local_ip, server_port);
     const auto index_desc = PeerDescriptor(index_ip, index_port);
@@ -33,15 +33,14 @@ void Orchestrator::start() const {
     client->add_peer(shared_files);
 }
 
-pair<bool, SearchResult> Orchestrator::search_file(const string& filename) const {
+pair<bool, SearchResult> Orchestrator::search_file(const string &filename) const {
     return client->search_file(filename);
 }
 
-shared_ptr<FileInfo> Orchestrator::request_file(const FileDescriptor& descriptor) const {
+shared_ptr<FileInfo> Orchestrator::request_file(const FileDescriptor &descriptor) const {
     return client->request_file(descriptor);
 }
 
-bool Orchestrator::download_file(const FileInfo& file, const string& name) const {
+bool Orchestrator::download_file(const FileInfo &file, const string &name) const {
     return client->download_file(file, name);
 }
-
