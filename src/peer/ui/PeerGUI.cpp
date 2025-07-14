@@ -23,7 +23,7 @@ void PeerGUI::search_files() {
     const char *filename = gtk_entry_get_text(GTK_ENTRY(search_entry));
     if (!filename || strlen(filename) == 0) return;
 
-    gtk_label_set_text(GTK_LABEL(status_label), "Searching...");
+    gtk_label_set_text(GTK_LABEL(status_label), "Searching network for files...");
     gtk_list_store_clear(results_store);
 
     auto [success, results] = orchestrator->search_file(string(filename));
@@ -38,9 +38,9 @@ void PeerGUI::search_files() {
                                2, (gint64) desc.hash1,
                                3, (gint64) desc.hash2, -1);
         }
-        gtk_label_set_text(GTK_LABEL(status_label), ("Found " + to_string(results.values.size()) + " files").c_str());
+        gtk_label_set_text(GTK_LABEL(status_label), ("Found " + to_string(results.values.size()) + " files in network").c_str());
     } else {
-        gtk_label_set_text(GTK_LABEL(status_label), "No files found");
+        gtk_label_set_text(GTK_LABEL(status_label), "No files found in network");
     }
 }
 
@@ -68,7 +68,7 @@ void PeerGUI::download_file() {
 
     if (!hash1_str || !hash2_str || !size_str || !name) return;
 
-    gtk_label_set_text(GTK_LABEL(status_label), "⬇️ Downloading...");
+    gtk_label_set_text(GTK_LABEL(status_label), "Downloading file from peers...");
 
     ll hash1 = stoll(hash1_str), hash2 = stoll(hash2_str);
     size_t size = stoull(size_str);
@@ -77,26 +77,29 @@ void PeerGUI::download_file() {
     auto file_info = orchestrator->request_file(fd);
 
     if (file_info && orchestrator->download_file(*file_info, string(name))) {
-        gtk_label_set_text(GTK_LABEL(status_label), "Download completed!");
+        gtk_label_set_text(GTK_LABEL(status_label), "Download completed successfully");
     } else {
-        gtk_label_set_text(GTK_LABEL(status_label), "Download failed");
+        gtk_label_set_text(GTK_LABEL(status_label), "Download failed - Please try again");
     }
 }
 
 void PeerGUI::apply_dark_theme() {
     GtkCssProvider *provider = gtk_css_provider_new();
     const char *css =
-            "window { background-color: #1a1a1a; color: #ffffff; }"
-            "entry { background-color: #2d2d2d; color: #ffffff; border: 1px solid #444; border-radius: 6px; padding: 8px; }"
-            "button { background: linear-gradient(to bottom, #28a745, #1e7e34); color: #ffffff; border: none; border-radius: 6px; padding: 10px 16px; font-weight: bold; }"
-            "button:hover { background: linear-gradient(to bottom, #34ce57, #28a745); }"
+            "window { background-color: #1e1e1e; color: #ffffff; }"
+            "entry { background-color: #2d2d2d; color: #ffffff; border: 1px solid #4a90e2; border-radius: 4px; padding: 8px 12px; }"
+            "entry:focus { border-color: #5ba0f2; }"
+            "button { background: linear-gradient(to bottom, #4a90e2, #357abd); color: #ffffff; border: none; border-radius: 4px; padding: 8px 16px; font-weight: 500; }"
+            "button:hover { background: linear-gradient(to bottom, #5ba0f2, #4a90e2); }"
             "treeview { background-color: #2d2d2d; color: #ffffff; }"
-            "treeview header button { background-color: #3a3a3a; color: #ffffff; border: 1px solid #444; }"
-            "scrolledwindow { border: 1px solid #444; border-radius: 6px; }"
+            "treeview header button { background-color: #3a3a3a; color: #ffffff; border: 1px solid #555; font-weight: 500; }"
+            "treeview:selected { background-color: #4a90e2; color: #ffffff; }"
+            "scrolledwindow { border: 1px solid #555; border-radius: 4px; }"
             "label { color: #ffffff; }"
-            ".status-label { background-color: #3a3a3a; padding: 8px; border-radius: 6px; border: 1px solid #444; }"
-            ".search-frame { background-color: #2a2a2a; border: 1px solid #444; border-radius: 8px; padding: 15px; margin: 10px; }"
-            ".download-frame { background-color: #2a2a2a; border: 1px solid #444; border-radius: 8px; padding: 15px; margin: 10px; }";
+            ".title-label { color: #4a90e2; font-size: 18px; font-weight: bold; }"
+            ".status-label { background-color: #3a3a3a; color: #ffffff; padding: 8px 12px; border-radius: 4px; border: 1px solid #555; }"
+            ".search-frame, .download-frame { background-color: #2a2a2a; border: 1px solid #555; border-radius: 6px; padding: 16px; margin: 8px; }"
+            "frame > label { color: #4a90e2; font-weight: 600; font-size: 14px; }";
 
     gtk_css_provider_load_from_data(provider, css, -1, NULL);
     gtk_style_context_add_provider_for_screen(gdk_screen_get_default(),
@@ -118,12 +121,13 @@ void PeerGUI::create_window() {
     gtk_container_add(GTK_CONTAINER(window), main_vbox);
 
     // Title
-    GtkWidget *title = gtk_label_new(NULL);
-    gtk_label_set_markup(GTK_LABEL(title), "<span size='x-large' weight='bold'>P2P File Exchange</span>");
-    gtk_box_pack_start(GTK_BOX(main_vbox), title, FALSE, FALSE, 0);
+    GtkWidget *title = gtk_label_new("P2P File Exchange System");
+    gtk_widget_set_name(title, "title-label");
+    gtk_widget_set_halign(title, GTK_ALIGN_CENTER);
+    gtk_box_pack_start(GTK_BOX(main_vbox), title, FALSE, FALSE, 10);
 
     // Search section with frame
-    GtkWidget *search_frame = gtk_frame_new("Search Files");
+    GtkWidget *search_frame = gtk_frame_new("File Search");
     gtk_widget_set_name(search_frame, "search-frame");
     GtkWidget *search_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
     gtk_container_set_border_width(GTK_CONTAINER(search_vbox), 15);
@@ -131,10 +135,10 @@ void PeerGUI::create_window() {
     GtkWidget *search_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
     search_entry = gtk_entry_new();
     gtk_entry_set_placeholder_text(GTK_ENTRY(search_entry), "Enter filename to search...");
-    gtk_widget_set_size_request(search_entry, -1, 40);
+    gtk_widget_set_size_request(search_entry, -1, 35);
 
-    GtkWidget *search_btn = gtk_button_new_with_label("Search");
-    gtk_widget_set_size_request(search_btn, 120, 40);
+    GtkWidget *search_btn = gtk_button_new_with_label("Search Network");
+    gtk_widget_set_size_request(search_btn, 120, 35);
     g_signal_connect(search_btn, "clicked", G_CALLBACK(on_search_clicked), this);
 
     gtk_box_pack_start(GTK_BOX(search_hbox), search_entry, TRUE, TRUE, 0);
@@ -167,7 +171,7 @@ void PeerGUI::create_window() {
     gtk_box_pack_start(GTK_BOX(main_vbox), results_frame, TRUE, TRUE, 0);
 
     // Download section with frame
-    GtkWidget *download_frame = gtk_frame_new("Download File");
+    GtkWidget *download_frame = gtk_frame_new("File Download");
     gtk_widget_set_name(download_frame, "download-frame");
     GtkWidget *download_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
     gtk_container_set_border_width(GTK_CONTAINER(download_vbox), 15);
@@ -177,15 +181,15 @@ void PeerGUI::create_window() {
     gtk_grid_set_column_spacing(GTK_GRID(download_grid), 10);
 
     hash1_entry = gtk_entry_new();
-    gtk_entry_set_placeholder_text(GTK_ENTRY(hash1_entry), "Hash1");
+    gtk_entry_set_placeholder_text(GTK_ENTRY(hash1_entry), "Hash 1");
     gtk_widget_set_size_request(hash1_entry, -1, 35);
 
     hash2_entry = gtk_entry_new();
-    gtk_entry_set_placeholder_text(GTK_ENTRY(hash2_entry), "Hash2");
+    gtk_entry_set_placeholder_text(GTK_ENTRY(hash2_entry), "Hash 2");
     gtk_widget_set_size_request(hash2_entry, -1, 35);
 
     size_entry = gtk_entry_new();
-    gtk_entry_set_placeholder_text(GTK_ENTRY(size_entry), "Size");
+    gtk_entry_set_placeholder_text(GTK_ENTRY(size_entry), "File Size");
     gtk_widget_set_size_request(size_entry, -1, 35);
 
     name_entry = gtk_entry_new();
@@ -193,7 +197,7 @@ void PeerGUI::create_window() {
     gtk_widget_set_size_request(name_entry, -1, 35);
 
     GtkWidget *download_btn = gtk_button_new_with_label("Download");
-    gtk_widget_set_size_request(download_btn, 120, 35);
+    gtk_widget_set_size_request(download_btn, 100, 35);
     g_signal_connect(download_btn, "clicked", G_CALLBACK(on_download_clicked), this);
 
     gtk_grid_attach(GTK_GRID(download_grid), hash1_entry, 0, 0, 1, 1);
@@ -207,10 +211,10 @@ void PeerGUI::create_window() {
     gtk_box_pack_start(GTK_BOX(main_vbox), download_frame, FALSE, FALSE, 0);
 
     // Status section
-    status_label = gtk_label_new("Ready");
+    status_label = gtk_label_new("Ready - Connected to P2P Network");
     gtk_widget_set_name(status_label, "status-label");
-    gtk_label_set_xalign(GTK_LABEL(status_label), 0.0);
-    gtk_box_pack_start(GTK_BOX(main_vbox), status_label, FALSE, FALSE, 0);
+    gtk_label_set_xalign(GTK_LABEL(status_label), 0.5);
+    gtk_box_pack_start(GTK_BOX(main_vbox), status_label, FALSE, FALSE, 10);
 
     gtk_widget_show_all(window);
 }
