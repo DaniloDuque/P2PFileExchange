@@ -24,7 +24,7 @@ class HeartbeatManager {
     const chrono::seconds PEER_TIMEOUT{INDEX_PEER_TIMEOUT};
     function<void(const PeerDescriptor &)> onPeerDead;
 
-    bool pingPeer(const PeerDescriptor &descriptor) const {
+    bool ping_peer(const PeerDescriptor &descriptor) const {
         const int sock = socket(AF_INET, SOCK_STREAM, 0);
         if (sock < 0) return false;
 
@@ -44,14 +44,14 @@ class HeartbeatManager {
         return alive;
     }
 
-    void heartbeatLoop() {
+    void heartbeat_loop() {
         while (running) {
             auto now = chrono::steady_clock::now(); {
                 vector<PeerDescriptor> deadPeers;
                 unique_lock lock(peerMutex);
                 for (auto &[peer, lastSeen]: peerLastSeen) {
                     if (now - lastSeen <= PEER_TIMEOUT) continue;
-                    if (!pingPeer(peer)) deadPeers.push_back(peer);
+                    if (!ping_peer(peer)) deadPeers.push_back(peer);
                     else peerLastSeen[peer] = now;
                 }
 
@@ -67,13 +67,13 @@ class HeartbeatManager {
     }
 
 public:
-    void setDeadPeerCallback(const function<void(const PeerDescriptor &)> &callback) {
+    void set_dead_peer_callback(const function<void(const PeerDescriptor &)> &callback) {
         onPeerDead = callback;
     }
 
     void start() {
         running = true;
-        heartbeatThread = thread(&HeartbeatManager::heartbeatLoop, this);
+        heartbeatThread = thread(&HeartbeatManager::heartbeat_loop, this);
     }
 
     void stop() {
@@ -81,12 +81,12 @@ public:
         if (heartbeatThread.joinable()) heartbeatThread.join();
     }
 
-    void updatePeer(const PeerDescriptor &descriptor) {
+    void update_peer(const PeerDescriptor &descriptor) {
         unique_lock lock(peerMutex);
         peerLastSeen[descriptor] = chrono::steady_clock::now();
     }
 
-    void removePeer(const PeerDescriptor &descriptor) {
+    void remove_peer(const PeerDescriptor &descriptor) {
         unique_lock lock(peerMutex);
         peerLastSeen.erase(descriptor);
         if (onPeerDead) onPeerDead(descriptor);

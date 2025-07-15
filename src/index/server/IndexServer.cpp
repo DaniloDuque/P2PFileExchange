@@ -18,12 +18,12 @@ class IndexServer final : public TCPServer {
     static constexpr int METADATA_SIZE_LIMIT = 1024 * 1024;
 
     void add_peer(const AddPeerDTO &dto) {
-        index.addPeer(dto);
-        heartbeat.updatePeer(dto.peer);
+        index.add_peer(dto);
+        heartbeat.update_peer(dto.peer);
     }
 
     void remove_peer(const RemovePeerDTO &dto) {
-        heartbeat.removePeer(dto.peer);
+        heartbeat.remove_peer(dto.peer);
     }
 
     SearchResult find_matches(const string &alias) const {
@@ -180,8 +180,8 @@ public:
     }
 
     void run() override {
-        heartbeat.setDeadPeerCallback([this](const PeerDescriptor &peer) {
-            index.removePeer(peer);
+        heartbeat.set_dead_peer_callback([this](const PeerDescriptor &peer) {
+            index.remove_peer(peer);
         });
         heartbeat.start();
         TCPServer::run();
