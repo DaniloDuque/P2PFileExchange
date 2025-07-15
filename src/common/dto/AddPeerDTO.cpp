@@ -20,16 +20,24 @@ struct AddPeerDTO {
     }
 
     static AddPeerDTO deserialize(const string &data) {
+        if (data.empty()) {
+            throw invalid_argument("Empty AddPeerDTO data");
+        }
+
         istringstream ss(data);
         string token;
 
-        getline(ss, token, ' ');
+        if (!getline(ss, token, ' ') || token.empty()) {
+            throw invalid_argument("Invalid peer descriptor in AddPeerDTO");
+        }
+
         const PeerDescriptor peer = PeerDescriptor::deserialize(token);
 
         set<IndexedFileDescriptor> indexed_files;
         while (ss >> token) {
-            if (!token.empty())
+            if (!token.empty()) {
                 indexed_files.insert(IndexedFileDescriptor::deserialize(token));
+            }
         }
 
         return AddPeerDTO(peer, indexed_files);

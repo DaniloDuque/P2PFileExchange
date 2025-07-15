@@ -27,15 +27,41 @@ struct FileDescriptor {
     }
 
     static FileDescriptor deserialize(const string &data) {
+        if (data.empty()) {
+            throw invalid_argument("Empty FileDescriptor data");
+        }
+
         FileDescriptor fd{};
         istringstream ss(data);
         string token;
-        getline(ss, token, ',');
-        fd.hash1 = stoll(token);
-        getline(ss, token, ',');
-        fd.hash2 = stoll(token);
-        getline(ss, token, ',');
-        fd.size = stoull(token);
+
+        if (!getline(ss, token, ',') || token.empty()) {
+            throw invalid_argument("Missing hash1 in FileDescriptor");
+        }
+        try {
+            fd.hash1 = stoll(token);
+        } catch (const exception &) {
+            throw invalid_argument("Invalid hash1 in FileDescriptor");
+        }
+
+        if (!getline(ss, token, ',') || token.empty()) {
+            throw invalid_argument("Missing hash2 in FileDescriptor");
+        }
+        try {
+            fd.hash2 = stoll(token);
+        } catch (const exception &) {
+            throw invalid_argument("Invalid hash2 in FileDescriptor");
+        }
+
+        if (!getline(ss, token, ',') || token.empty()) {
+            throw invalid_argument("Missing size in FileDescriptor");
+        }
+        try {
+            fd.size = stoull(token);
+        } catch (const exception &) {
+            throw invalid_argument("Invalid size in FileDescriptor");
+        }
+
         return fd;
     }
 };

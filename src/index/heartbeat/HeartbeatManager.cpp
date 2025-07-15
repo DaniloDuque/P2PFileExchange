@@ -15,7 +15,6 @@
 #include <constants.h>
 using namespace std;
 
-// Use the same mutex as the index
 class HeartbeatManager {
     map<PeerDescriptor, chrono::steady_clock::time_point> peerLastSeen;
     mutable mutex peerMutex;
@@ -49,7 +48,7 @@ class HeartbeatManager {
         while (running) {
             auto now = chrono::steady_clock::now(); {
                 vector<PeerDescriptor> deadPeers;
-                lock_guard lock(peerMutex);
+                unique_lock lock(peerMutex);
                 for (auto &[peer, lastSeen]: peerLastSeen) {
                     if (now - lastSeen <= PEER_TIMEOUT) continue;
                     if (!pingPeer(peer)) deadPeers.push_back(peer);
@@ -83,24 +82,15 @@ public:
     }
 
     void updatePeer(const PeerDescriptor &descriptor) {
-        lock_guard lock(peerMutex);
+        unique_lock lock(peerMutex);
         peerLastSeen[descriptor] = chrono::steady_clock::now();
     }
 
     void removePeer(const PeerDescriptor &descriptor) {
-        lock_guard lock(peerMutex);
+        unique_lock lock(peerMutex);
         peerLastSeen.erase(descriptor);
         if (onPeerDead) onPeerDead(descriptor);
         logger.info("Removed stoped peer: " + descriptor.ip + ":" + to_string(descriptor.port));
-    }
-
-    set<PeerDescriptor> getAlivePeers() const {
-        lock_guard lock(peerMutex);
-        set<PeerDescriptor> alive;
-        for (const auto &peer: peerLastSeen | views::keys) {
-            alive.insert(peer);
-        }
-        return alive;
     }
 
     ~HeartbeatManager() {

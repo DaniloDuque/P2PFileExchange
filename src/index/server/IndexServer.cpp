@@ -15,6 +15,7 @@
 class IndexServer final : public TCPServer {
     FileIndex index;
     HeartbeatManager heartbeat;
+    static constexpr int METADATA_SIZE_LIMIT = 1024 * 1024;
 
     void add_peer(const AddPeerDTO &dto) {
         index.addPeer(dto);
@@ -38,7 +39,7 @@ class IndexServer final : public TCPServer {
             const AddPeerDTO new_peer = AddPeerDTO::deserialize(request);
             logger.info("New Peer indexing started - " + new_peer.peer.ip + ":" + to_string(new_peer.peer.port));
             add_peer(new_peer);
-        } catch (const exception& ex) {
+        } catch (const exception &ex) {
             logger.error("Failed to deserialize AddPeer request: " + string(ex.what()));
         }
     }
@@ -55,7 +56,7 @@ class IndexServer final : public TCPServer {
             if (!stream->write(true, client_socket, rsp)) {
                 logger.error("Failed to send file request response");
             }
-        } catch (const exception& ex) {
+        } catch (const exception &ex) {
             logger.error("Failed to handle file request: " + string(ex.what()));
             stream->write(false, client_socket, "Invalid request");
         }
@@ -66,7 +67,7 @@ class IndexServer final : public TCPServer {
             const auto dto = RemovePeerDTO::deserialize(request);
             logger.info("Peer removal started - " + dto.peer.ip + ":" + to_string(dto.peer.port));
             remove_peer(dto);
-        } catch (const exception& ex) {
+        } catch (const exception &ex) {
             logger.error("Failed to deserialize RemovePeer request: " + string(ex.what()));
         }
     }
@@ -80,10 +81,47 @@ class IndexServer final : public TCPServer {
             if (!stream->write(true, client_socket, dto.serialize())) {
                 logger.error("Failed to send search results");
             }
-        } catch (const exception& ex) {
+        } catch (const exception &ex) {
             logger.error("Failed to handle file search: " + string(ex.what()));
             stream->write(false, client_socket, "Search failed");
         }
+    }
+
+    bool validate_request(const string &request, char &command, string &data) const {
+        if (request.empty()) {
+            logger.warn("Empty request received");
+            return false;
+        }
+
+        if (request.length() < 3) {
+            logger.error("Request too short: " + to_string(request.length()));
+            return false;
+        }
+
+        command = request[0];
+        if (request[1] != ' ') {
+            logger.error("Invalid request format: missing space separator");
+            return false;
+        }
+
+        if (command != ADD_PEER && command != FILE_REQUEST &&
+            command != REMOVE_PEER && command != FILE_SEARCH) {
+            logger.error("Invalid command: " + to_string(command));
+            return false;
+        }
+
+        data = request.substr(2);
+        if (data.empty()) {
+            logger.error("Empty data payload");
+            return false;
+        }
+
+        if (data.length() > METADATA_SIZE_LIMIT) {
+            logger.error("Data payload too large: " + to_string(data.length()));
+            return false;
+        }
+
+        return true;
     }
 
     void handle_client(const int client_socket) override {
@@ -91,32 +129,25 @@ class IndexServer final : public TCPServer {
             logger.error("Invalid client socket");
             return;
         }
-        
+
         logger.info("Request received!");
         const auto [status, payload] = stream->read(client_socket);
 
         if (!status) {
             logger.error("Failed to read from client: " + payload);
+            stream->write(false, client_socket, "Read error");
             close(client_socket);
             return;
         }
-        
-        const string request = toLower(payload);
-        if (request.empty()) {
-            logger.warn("Empty request received");
+
+        char command;
+        string data;
+        if (!validate_request(payload, command, data)) {
+            stream->write(false, client_socket, "Invalid request format");
             close(client_socket);
             return;
         }
-        
-        if (request.length() < 2) {
-            logger.error("Invalid request format: too short");
-            close(client_socket);
-            return;
-        }
-        
-        const auto data = request.substr(2, request.size());
-        const char command = request[0];
-        
+
         try {
             switch (command) {
                 case ADD_PEER:
@@ -132,13 +163,15 @@ class IndexServer final : public TCPServer {
                     handle_file_search(data, client_socket);
                     break;
                 default:
-                    logger.warn("Unknown command: " + to_string(command));
+                    logger.error("Unhandled command: " + to_string(static_cast<int>(command)));
+                    stream->write(false, client_socket, "Unknown command");
                     break;
             }
-        } catch (const exception& ex) {
+        } catch (const exception &ex) {
             logger.error("Error handling client request: " + string(ex.what()));
+            stream->write(false, client_socket, "Server error");
         }
-        
+
         close(client_socket);
     }
 
