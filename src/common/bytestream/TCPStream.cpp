@@ -14,22 +14,29 @@ class TCPStream final : public ByteStream {
     pair<bool, string> read(const int socket) override {
         if (socket < 0) return {false, "Invalid socket"};
         
+        uint32_t size;
+        if (recv(socket, &size, sizeof(size), MSG_WAITALL) != sizeof(size)) {
+            return {false, "Failed to read message size"};
+        }
+        size = ntohl(size);
+        
         string result;
-        char buffer[BUFFER_SIZE] = {};
-        while (true) {
-            const ssize_t bytesRead = recv(socket, buffer, BUFFER_SIZE, 0);
+        result.reserve(size);
+        size_t totalBytesRead = 0;
+        
+        while (totalBytesRead < size) {
+            char buffer[BUFFER_SIZE];
+            const size_t bytesToRead = min(size - totalBytesRead, BUFFER_SIZE);
+            const ssize_t bytesRead = recv(socket, buffer, bytesToRead, 0);
+            
             if (bytesRead < 0) {
                 if (errno == EAGAIN || errno == EWOULDBLOCK) continue;
-                const string error = "Error in read: " + string(strerror(errno));
-                logger.error(error);
-                return {false, error};
+                return {false, "Error reading message: " + string(strerror(errno))};
             }
             if (bytesRead == 0) break;
+            
             result.append(buffer, bytesRead);
-            if (result.find(END_OF_STREAM) != string::npos) {
-                result.erase(result.find(END_OF_STREAM));
-                break;
-            }
+            totalBytesRead += bytesRead;
         }
 
         if (result.empty()) return {false, "Empty payload"};
@@ -49,11 +56,17 @@ class TCPStream final : public ByteStream {
             return false;
         }
         
-        const string package = (success ? OK : ERROR) + buffer + END_OF_STREAM;
+        const string package = (success ? OK : ERROR) + buffer;
+        
+        uint32_t size = htonl(package.size());
+        if (send(socket, &size, sizeof(size), 0) != sizeof(size)) {
+            logger.error("Failed to send message size");
+            return false;
+        }
+        
         size_t totalBytesSent = 0;
-        const size_t bufferSize = package.size();
-        while (totalBytesSent < bufferSize) {
-            const ssize_t bytesToSend = min(bufferSize - totalBytesSent, BUFFER_SIZE);
+        while (totalBytesSent < package.size()) {
+            const ssize_t bytesToSend = min(package.size() - totalBytesSent, BUFFER_SIZE);
             const ssize_t bytesSent = send(socket, &package[totalBytesSent], bytesToSend, 0);
             if (bytesSent < 0) {
                 if (errno == EAGAIN || errno == EWOULDBLOCK) continue;
@@ -65,12 +78,4 @@ class TCPStream final : public ByteStream {
         return true;
     }
 
-    bool send_acknowledge(const int socket) override {
-        return write(true, socket, ACKNOWLEDGE);
-    }
-
-    bool receive_acknowledge(const int socket) override {
-        const auto [success, payload] = read(socket);
-        return success && payload == ACKNOWLEDGE;
-    }
 };

@@ -4,6 +4,9 @@ using namespace std;
 
 constexpr size_t RESPONSE_LIST_SIZE = 100;
 constexpr size_t BUFFER_SIZE = 1024;
+constexpr size_t FILE_BUFFER_SIZE = 8192;
+constexpr size_t ENCODE_CHUNK_SIZE = 3072;
+constexpr size_t DECODE_CHUNK_SIZE = 4096;
 constexpr size_t INDEX_HEARTBEAT_INTERVAL = 25;
 constexpr size_t INDEX_PEER_TIMEOUT = 50;
 

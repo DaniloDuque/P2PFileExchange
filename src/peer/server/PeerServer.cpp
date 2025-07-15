@@ -3,11 +3,9 @@
 #include <common/server/TCPServer.cpp>
 #include <dto/DownloadFileChunkDTO.cpp>
 #include <logger/Logger.h>
-#include <encoder/Encoder.h>
 #include <common/descriptor/IndexedFileDescriptor.cpp>
 
 class PeerServer final : public TCPServer {
-    const shared_ptr<Encoder> encoder;
     const set<IndexedFileDescriptor> shared_files;
     const string path;
 
@@ -50,8 +48,8 @@ class PeerServer final : public TCPServer {
             return;
         }
         
-        vector<unsigned char> buffer(request.chunk_size);
-        const size_t bytes_read = fread(buffer.data(), 1, request.chunk_size, file);
+        vector<char> buffer(request.chunk_size);
+        size_t bytes_read = fread(buffer.data(), 1, request.chunk_size, file);
         
         if (ferror(file)) {
             logger.error("Error reading file: " + filePath);
@@ -67,10 +65,9 @@ class PeerServer final : public TCPServer {
             return;
         }
         
-        const string binary_data(buffer.begin(), buffer.begin() + bytes_read);
-        const string file_chunk = encoder->encode(binary_data);
+        string binary_data(buffer.begin(), buffer.begin() + bytes_read);
         
-        if (!stream->write(true, peerSocket, file_chunk)) {
+        if (!stream->write(true, peerSocket, binary_data)) {
             logger.error("Failed to send file chunk");
         }
         
@@ -84,10 +81,9 @@ class PeerServer final : public TCPServer {
     }
 
 public:
-    PeerServer(const shared_ptr<Encoder> &encoder,
-               const shared_ptr<ByteStream> &stream,
+    PeerServer(const shared_ptr<ByteStream> &stream,
                const set<IndexedFileDescriptor> &shared_files,
                const string &path,
-               const int port) : TCPServer(stream, port), encoder(encoder), shared_files(shared_files), path(path) {
+               const int port) : TCPServer(stream, port), shared_files(shared_files), path(path) {
     }
 };

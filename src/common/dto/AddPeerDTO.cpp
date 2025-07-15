@@ -27,7 +27,7 @@ struct AddPeerDTO {
         const PeerDescriptor peer = PeerDescriptor::deserialize(token);
 
         set<IndexedFileDescriptor> indexed_files;
-        while (getline(ss, token, ' ')) {
+        while (ss >> token) {
             if (!token.empty())
                 indexed_files.insert(IndexedFileDescriptor::deserialize(token));
         }

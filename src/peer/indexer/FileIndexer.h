@@ -6,7 +6,7 @@
 class FileIndexer {
     mutable FileHasher hasher;
 
-    vector<unsigned char> read_file(const filesystem::path &path) const;
+    bool validate_file(const filesystem::path &path) const;
 
 public:
     FileIndexer() = default;

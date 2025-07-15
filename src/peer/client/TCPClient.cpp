@@ -79,21 +79,15 @@ protected:
         }
         
         const auto [status, file_chunk] = stream->read(peerSocket);
+        
         if (!status) {
-            logger.error("Failed to read file chunk: " + file_chunk);
+            logger.error("Failed to read file chunk");
             close(peerSocket);
             return;
         }
 
         if (file_chunk.empty()) {
             logger.error("Received empty file chunk");
-            close(peerSocket);
-            return;
-        }
-
-        const string decoded_file_chunk = encoder->decode(file_chunk);
-        if (decoded_file_chunk.empty()) {
-            logger.error("Failed to decode file chunk");
             close(peerSocket);
             return;
         }
@@ -105,11 +99,11 @@ protected:
             return;
         }
 
-        const ssize_t bytesWritten = pwrite(fd, decoded_file_chunk.data(), decoded_file_chunk.size(), offset);
+        const ssize_t bytesWritten = pwrite(fd, file_chunk.data(), file_chunk.size(), offset);
         if (bytesWritten < 0) {
             logger.error("Error in pwrite: " + string(strerror(errno)));
-        } else if (static_cast<size_t>(bytesWritten) != decoded_file_chunk.size()) {
-            logger.warn("Partial write: expected " + to_string(decoded_file_chunk.size()) + 
+        } else if (static_cast<size_t>(bytesWritten) != file_chunk.size()) {
+            logger.warn("Partial write: expected " + to_string(file_chunk.size()) + 
                        " bytes, wrote " + to_string(bytesWritten));
         }
 
@@ -121,12 +115,11 @@ public:
     TCPClient() = delete;
 
     TCPClient(const shared_ptr<ByteStream> &stream,
-              const shared_ptr<Encoder> &encoder,
               const PeerDescriptor &peer,
               const PeerDescriptor &server,
               const PeerDescriptor &index,
               const string &output_directory)
-        : Client(stream, encoder, peer, server, index, output_directory) {
+        : Client(stream, peer, server, index, output_directory) {
     }
 
     ~TCPClient() override = default;
@@ -136,6 +129,7 @@ public:
         if (clientSocket < 0) return false;
 
         const AddPeerDTO dto(server, shared_files);
+        logger.debug(dto.serialize());
 
         if (const string package = string(1, ADD_PEER) + " " + dto.serialize(); !stream->write(
             true, clientSocket, package)) {

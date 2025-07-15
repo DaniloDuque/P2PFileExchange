@@ -4,7 +4,6 @@
 #include <common/descriptor/FileDescriptor.cpp>
 #include <common/descriptor/SearchResult.cpp>
 #include <common/bytestream/ByteStream.h>
-#include <encoder/Encoder.h>
 #include <fileinfo/FileInfo.cpp>
 #include <descriptor/IndexedFileDescriptor.cpp>
 using namespace std;
@@ -13,7 +12,6 @@ class Client {
 protected:
     mutable mutex write_file_mutex;
     shared_ptr<ByteStream> stream;
-    shared_ptr<Encoder> encoder;
     const PeerDescriptor peer, server, index;
     const string output_directory;
 
@@ -23,12 +21,11 @@ public:
     Client() = delete;
 
     Client(shared_ptr<ByteStream> stream,
-           shared_ptr<Encoder> encoder,
            const PeerDescriptor &peer,
            const PeerDescriptor &server,
            const PeerDescriptor &index,
            const string &shared_directory)
-        : stream(std::move(stream)), encoder(std::move(encoder)), peer(peer), server(server), index(index),
+        : stream(std::move(stream)), peer(peer), server(server), index(index),
           output_directory(shared_directory) {
     }
 

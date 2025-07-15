@@ -33,7 +33,7 @@ class IndexServer final : public TCPServer {
         return index.find(descriptor);
     }
 
-    void handleAddPeer(const string &request) {
+    void handle_add_peer(const string &request) {
         try {
             const AddPeerDTO new_peer = AddPeerDTO::deserialize(request);
             logger.info("New Peer indexing started - " + new_peer.peer.ip + ":" + to_string(new_peer.peer.port));
@@ -43,7 +43,7 @@ class IndexServer final : public TCPServer {
         }
     }
 
-    void handleFileRequest(const string &request, const int client_socket) const {
+    void handle_file_request(const string &request, const int client_socket) const {
         try {
             const auto [descriptor] = FileRequestDTO::deserialize(request);
             logger.info(
@@ -61,7 +61,7 @@ class IndexServer final : public TCPServer {
         }
     }
 
-    void handleRemovePeer(const string &request) {
+    void handle_remove_peer(const string &request) {
         try {
             const auto dto = RemovePeerDTO::deserialize(request);
             logger.info("Peer removal started - " + dto.peer.ip + ":" + to_string(dto.peer.port));
@@ -71,7 +71,7 @@ class IndexServer final : public TCPServer {
         }
     }
 
-    void handleFileSearch(const string &request, const int client_socket) const {
+    void handle_file_search(const string &request, const int client_socket) const {
         try {
             const auto file_search_dto = FileSearchDTO::deserialize(request);
             logger.info("Searching for " + file_search_dto.filename + " in the network");
@@ -94,7 +94,7 @@ class IndexServer final : public TCPServer {
         
         logger.info("Request received!");
         const auto [status, payload] = stream->read(client_socket);
-        
+
         if (!status) {
             logger.error("Failed to read from client: " + payload);
             close(client_socket);
@@ -120,16 +120,16 @@ class IndexServer final : public TCPServer {
         try {
             switch (command) {
                 case ADD_PEER:
-                    handleAddPeer(data);
+                    handle_add_peer(data);
                     break;
                 case FILE_REQUEST:
-                    handleFileRequest(data, client_socket);
+                    handle_file_request(data, client_socket);
                     break;
                 case REMOVE_PEER:
-                    handleRemovePeer(data);
+                    handle_remove_peer(data);
                     break;
                 case FILE_SEARCH:
-                    handleFileSearch(data, client_socket);
+                    handle_file_search(data, client_socket);
                     break;
                 default:
                     logger.warn("Unknown command: " + to_string(command));

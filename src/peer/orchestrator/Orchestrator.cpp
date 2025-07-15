@@ -1,7 +1,6 @@
 #include <Orchestrator.h>
 #include <client/TCPClient.cpp>
 #include <server/PeerServer.cpp>
-#include <encoder/Base64Encoder.cpp>
 #include <common/bytestream/TCPStream.cpp>
 
 Orchestrator::Orchestrator(const string &local_ip, const int server_port,
@@ -14,10 +13,9 @@ Orchestrator::Orchestrator(const string &local_ip, const int server_port,
     shared_files = indexer.index_files(shared_directory);
 
     const auto stream = make_shared<TCPStream>();
-    const auto encoder = make_shared<Base64Encoder>();
 
-    client = make_shared<TCPClient>(stream, encoder, peer_desc, server_desc, index_desc, output_directory);
-    server = make_shared<PeerServer>(encoder, stream, shared_files, shared_directory, server_port);
+    client = make_shared<TCPClient>(stream, peer_desc, server_desc, index_desc, output_directory);
+    server = make_shared<PeerServer>(stream, shared_files, shared_directory, server_port);
 }
 
 void Orchestrator::stop() const {
